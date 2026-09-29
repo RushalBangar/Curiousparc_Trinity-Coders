@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiter Dashboard - SkillBridge</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>SkillBridge</h1>
+            <nav>
+                <a href="#" onclick="window.Auth.logout(); return false;" class="btn-secondary">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="profile-card">
+                <h3 id="profileName">Loading...</h3>
+                <p id="profileHeadline">Recruiter</p>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active" onclick="showTab('myJobs'); return false;">My Job Postings</a></li>
+                <li><a href="#" onclick="showTab('postJob'); return false;">Post New Job</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- My Jobs Tab -->
+            <section id="myJobsTab">
+                <div class="section-header">
+                    <h2>My Active Jobs</h2>
+                </div>
+                <div id="recruiterJobsContainer">
+                    <p>Loading jobs...</p>
+                </div>
+            </section>
+
+            <!-- Post Job Tab -->
+            <section id="postJobTab" style="display: none;">
+                <div class="section-header">
+                    <h2>Create New Job Posting</h2>
+                </div>
+                
+                <form id="postJobForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Job Title</label>
+                            <input type="text" id="jobTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" id="companyName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="jobLocation" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Employment Type</label>
+                            <select id="employmentType" required>
+                                <option value="full-time">Full-Time</option>
+                                <option value="part-time">Part-Time</option>
+                                <option value="contract">Contract</option>
+                                <option value="internship">Internship</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="jobDescription" rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" required></textarea>
+                    </div>
+
+                    <h4>Required & Preferred Skills</h4>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Add the technical competencies required for this role.</p>
+                    
+                    <div id="selectedSkillsContainer" class="skill-tags" style="margin-bottom: 1rem;"></div>
+                    
+                    <div class="job-card" style="background: var(--neutral-bg);">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Select Skill</label>
+                                <select id="jobSkillSelect"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Is this Mandatory?</label>
+                                <select id="jobSkillRequired">
+                                    <option value="true">Required (Mandatory)</option>
+                                    <option value="false">Preferred (Bonus)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-secondary" onclick="addSkillToDraft()">+ Add Skill to Job</button>
+                    </div>
+
+                    <button type="submit" class="btn-primary w-full" style="margin-top: 2rem;">Publish Job</button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <!-- Applicants Modal -->
+    <div id="applicantsModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+        <div style="background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <h2>Candidate Pipeline</h2>
+                <button onclick="document.getElementById('applicantsModal').style.display='none'" class="btn-secondary">Close</button>
+            </div>
+            
+            <div id="applicantsContainer">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/recruiter.js"></script>
+    <script>
+        function showTab(tabName) {
+            document.getElementById('myJobsTab').style.display = 'none';
+            document.getElementById('postJobTab').style.display = 'none';
+            
+            document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById(tabName + 'Tab').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

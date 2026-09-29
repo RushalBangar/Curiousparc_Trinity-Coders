@@ -1,0 +1,24 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(
+    title="SkillBridge API",
+    description="Skill-to-Job Matching Platform API",
+    version="1.0.0"
+)
+
+# Configure CORS for the frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify the actual frontend domains
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the SkillBridge API"}
+
+from app.api.v1.router import api_router
+app.include_router(api_router, prefix="/api/v1")

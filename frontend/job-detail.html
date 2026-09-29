@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Detail - SkillBridge</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body style="background-color: var(--neutral-bg);">
+    <header>
+        <div class="container">
+            <h1>SkillBridge</h1>
+            <nav>
+                <a href="candidate-dashboard.html">Back to Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container" style="max-width: 800px; padding: 2rem 20px;">
+        <div class="card" style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <h2 id="jobTitle" style="color: var(--primary-brand); font-size: 2rem;">Loading...</h2>
+                    <p id="jobMeta" style="color: var(--text-muted); font-size: 1.1rem;"></p>
+                </div>
+                <button id="applyBtn" class="btn-primary" onclick="applyToJob()">Apply Now</button>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <h3>Job Description</h3>
+                <p id="jobDescription" style="white-space: pre-line; margin-top: 0.5rem; color: var(--text-main);"></p>
+            </div>
+        </div>
+
+        <div class="card" id="gapAnalysisContainer">
+            <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Your Skill Gap Analysis</h3>
+            <div id="matchingRenderArea">
+                <p>Loading analysis...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/matching.js"></script>
+    <script>
+        window.Auth.protectRoute(['seeker']);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!jobId) {
+                document.body.innerHTML = '<div class="container" style="padding: 2rem;"><h2>Invalid Job ID</h2></div>';
+                return;
+            }
+
+            try {
+                const jobDetail = await window.ApiClient.get(`/jobs/${jobId}`);
+                document.getElementById('jobTitle').textContent = jobDetail.title;
+                document.getElementById('jobMeta').textContent = `${jobDetail.company_name} • ${jobDetail.location} • ${jobDetail.employment_type}`;
+                document.getElementById('jobDescription').textContent = jobDetail.description;
+
+                // Use the matching UI utility
+                const container = document.getElementById('matchingRenderArea');
+                window.MatchingUI.renderGapAnalysis(jobDetail.gap_analysis, container);
+                
+            } catch (error) {
+                alert("Failed to load job details.");
+            }
+        });
+
+        async function applyToJob() {
+            const btn = document.getElementById('applyBtn');
+            btn.disabled = true; btn.textContent = 'Applying...';
+            try {
+                await window.ApiClient.post(`/jobs/${jobId}/apply`, {});
+                alert('Successfully applied!');
+                window.location.href = 'candidate-dashboard.html';
+            } catch (error) {
+                alert('Failed to apply: ' + error.message);
+                btn.disabled = false; btn.textContent = 'Apply Now';
+            }
+        }
+    </script>
+</body>
+</html>

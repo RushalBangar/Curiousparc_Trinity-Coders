@@ -1,0 +1,342 @@
+﻿SkillBridge: Skill-to-Job Matching Platform
+Technical Architecture & Project Specification Document
+1. Project Overview & Executive Summary
+1.1 Problem Statement
+Traditional hiring platforms and job boards rely on keyword-heavy resume screening, creating significant friction between candidates and employers. Candidates often lack transparent feedback regarding why their profiles were rejected or what technical skills they lack for desired roles. Conversely, recruiters are overwhelmed by unqualified applicants and must manually vet resumes without an objective measure of skill alignment.
+1.2 Proposed Solution
+SkillBridge is a modern, skill-first recruitment and job-matching platform designed to match candidates to relevant positions based on verified technical competencies rather than static resumes.
+
+
+Key outcomes delivered by SkillBridge:
+
+
+* Objective Match Scoring: Generates a deterministic match percentage for every job-candidate pairing based on required and preferred competencies.
+* Skill Gap Analysis: Highlights exact missing skills for a job posting and offers direct upskilling guidance.
+* Streamlined Recruiter Pipelines: Automatically ranks applicants by compatibility, reducing time-to-hire.
+1.3 Target Personas
+* Job Seekers / Candidates: Students, career switchers, and professionals seeking roles aligned with their specific technical skill sets.
+* Employers / Recruiters: Companies and hiring managers looking to define structured skill criteria and access pre-ranked applicant pools.
+* Platform Administrators: Oversee system health, standardize the skill taxonomy, and monitor recruitment analytics.
+2. Technology Stack & Architectural Decision
+2.1 Architecture Model
+The system follows a decoupled Client-Server RESTful Architecture:
+
+
+* Frontend Client: Lightweight, responsive Single-Page Interface built with vanilla web standards (HTML5, CSS3, ES6+ JavaScript) using native Fetch API.
+* Backend Service: High-performance Python backend powered by FastAPI, leveraging Pydantic for request/response validation and Uvicorn as the ASGI server.
+* Database & Identity: Supabase (PostgreSQL), providing relational integrity, Row Level Security (RLS), Supabase Auth for JWT session management, and Supabase Storage for assets.
+2.2 Tech Stack Selection Matrix
+Component
+	Selected Technology
+	Rationale & Justification
+	Frontend
+	HTML5, CSS3, Vanilla JS (ES6+)
+	Rapid load times, zero build tool complexity, modular JavaScript modules, native Fetch API integration.
+	Backend
+	Python (FastAPI)
+	High throughput via async/await, native OpenAPI documentation, automatic schema validation, and simple integration with data processing libraries.
+	Database
+	Supabase (PostgreSQL)
+	Robust relational modeling for many-to-many skill relationships, ACID compliance, pgvector compatibility for future AI embeddings, and built-in Row Level Security.
+	Authentication
+	Supabase Auth
+	Native JWT issuance, secure role-based access control (candidate, recruiter, admin), and seamless frontend integration.
+	File Storage
+	Supabase Storage
+	S3-compatible cloud storage for candidate resumes and organization logos.
+	3. Repository & Directory Structure
+skillbridge/
+
+
+├── backend/
+
+
+│   ├── app/
+
+
+│   │   ├── api/
+
+
+│   │   │   └── v1/
+
+
+│   │   │       ├── endpoints/
+
+
+│   │   │       │   ├── auth.py          # Registration, login, session validation
+
+
+│   │   │       │   ├── users.py         # Candidate & recruiter profile management
+
+
+│   │   │       │   ├── jobs.py          # Job posting CRUD and search
+
+
+│   │   │       │   ├── matching.py      # Match calculation & gap analysis endpoints
+
+
+│   │   │       │   └── analytics.py     # Hiring trends & skill demand metrics
+
+
+│   │   │       └── router.py            # API v1 central router
+
+
+│   │   ├── core/
+
+
+│   │   │   ├── config.py                # Environment configuration & settings
+
+
+│   │   │   ├── database.py              # Supabase / PostgreSQL client setup
+
+
+│   │   │   └── security.py              # Auth middleware & token verification
+
+
+│   │   ├── models/                      # Pydantic schemas
+
+
+│   │   │   ├── user.py
+
+
+│   │   │   ├── job.py
+
+
+│   │   │   └── match.py
+
+
+│   │   ├── services/
+
+
+│   │   │   ├── matcher.py               # Core matching algorithm & scoring engine
+
+
+│   │   │   └── skill_parser.py          # Taxonomy normalization helper
+
+
+│   │   └── main.py                      # Application bootstrap & middleware
+
+
+│   ├── tests/                           # Unit & integration test suite
+
+
+│   ├── requirements.txt                 # Python dependencies
+
+
+│   └── .env.example
+
+
+│
+
+
+├── frontend/
+
+
+│   ├── assets/
+
+
+│   │   ├── css/
+
+
+│   │   │   ├── main.css                 # Base resets, CSS variables, typography
+
+
+│   │   │   ├── components.css           # Buttons, form controls, badges, cards, modals
+
+
+│   │   │   ├── dashboard.css            # Candidate & recruiter layouts
+
+
+│   │   │   └── auth.css                 # Login and registration styling
+
+
+│   │   ├── js/
+
+
+│   │   │   ├── api.js                   # Unified fetch wrapper with JWT interceptor
+
+
+│   │   │   ├── auth.js                  # Authentication state handler
+
+
+│   │   │   ├── candidate.js             # Candidate profile, skill tagging, and job feed
+
+
+│   │   │   ├── recruiter.js             # Job post creator and applicant ranking UI
+
+
+│   │   │   └── matching.js              # Score progress bars and gap renderer
+
+
+│   │   └── images/                      # Icons, logos, and UI graphics
+
+
+│   ├── index.html                       # Public marketing landing page
+
+
+│   ├── login.html                       # Unified login page
+
+
+│   ├── register.html                    # Role-based onboarding page
+
+
+│   ├── candidate-dashboard.html         # Candidate job recommendations & skill manager
+
+
+│   ├── recruiter-dashboard.html         # Recruiter candidate pipeline & post manager
+
+
+│   ├── post-job.html                    # Job posting creation interface
+
+
+│   └── job-detail.html                  # In-depth job view & match breakdown
+
+
+│
+
+
+└── docs/
+
+
+    ├── api_specs.md
+
+
+    └── schema.sql
+4. Database Architecture & Data Models
+4.1 Relational Schema Specification
+1. profiles: Stores user profile data linked directly to Supabase Auth.
+   * id (UUID, Primary Key, Foreign Key to auth.users)
+   * email (TEXT, Unique, Not Null)
+   * full_name (TEXT, Not Null)
+   * role (TEXT, Check: 'seeker', 'recruiter', 'admin')
+   * bio (TEXT)
+   * headline (TEXT)
+   * location (TEXT)
+   * resume_url (TEXT)
+   * created_at (TIMESTAMPTZ)
+2. skills: Centralized standardized taxonomy of skills.
+   * id (UUID, Primary Key)
+   * name (TEXT, Unique, Not Null)
+   * category (TEXT, Not Null) -- e.g., 'Languages', 'Frameworks', 'Databases', 'DevOps'
+3. candidate_skills: Association table for candidate proficiencies.
+   * candidate_id (UUID, Foreign Key to profiles.id)
+   * skill_id (UUID, Foreign Key to skills.id)
+   * proficiency_level (TEXT, Check: 'beginner', 'intermediate', 'advanced', 'expert')
+   * years_experience (NUMERIC(3, 1))
+   * Primary Key: (candidate_id, skill_id)
+4. jobs: Employer job postings.
+   * id (UUID, Primary Key)
+   * recruiter_id (UUID, Foreign Key to profiles.id)
+   * title (TEXT, Not Null)
+   * company_name (TEXT, Not Null)
+   * description (TEXT, Not Null)
+   * location (TEXT, Not Null)
+   * employment_type (TEXT, Check: 'full-time', 'part-time', 'internship', 'contract')
+   * is_active (BOOLEAN, Default: true)
+   * created_at (TIMESTAMPTZ)
+5. job_skills: Skill requirements defined for each job listing.
+   * job_id (UUID, Foreign Key to jobs.id)
+   * skill_id (UUID, Foreign Key to skills.id)
+   * is_required (BOOLEAN, Default: true) -- true for mandatory, false for preferred
+   * weight (NUMERIC(3, 2), Default: 1.00) -- importance multiplier (0.5 to 2.0)
+   * Primary Key: (job_id, skill_id)
+6. applications: Job applications with computed match snapshot.
+   * id (UUID, Primary Key)
+   * job_id (UUID, Foreign Key to jobs.id)
+   * candidate_id (UUID, Foreign Key to profiles.id)
+   * match_score (NUMERIC(5, 2)) -- recorded compatibility percentage
+   * status (TEXT, Check: 'applied', 'reviewing', 'shortlisted', 'rejected')
+   * created_at (TIMESTAMPTZ)
+   * Unique Constraint: (job_id, candidate_id)
+5. Skill-to-Job Matching Engine & Algorithm
+5.1 Algorithmic Formulation
+The platform uses a weighted dual-tier scoring algorithm that evaluates mandatory requirements separately from optional/preferred enhancements:
+
+
+$$\text{Match Score (%)} = \left[ \left( \text{Weight_Req} \times \frac{\sum \text{Matched Required Weights}}{\sum \text{Total Required Weights}} \right) + \left( \text{Weight_Pref} \times \frac{\sum \text{Matched Preferred Weights}}{\sum \text{Total Preferred Weights}} \right) \right] \times 100$$
+
+
+Default Parameters:
+
+
+* Weight_Req = 0.75 (Mandatory skills contribute 75% of total score)
+* Weight_Pref = 0.25 (Preferred skills contribute 25% of total score)
+* If a job specifies no preferred skills, Weight_Req is set to 1.00.
+5.2 Skill Gap Analysis Logic
+For any candidate-job evaluation, the engine categorizes skills into three buckets:
+
+
+* Matched Skills: Skills possessed by candidate matching job requirements (rendered green).
+* Critical Skill Gaps: Required skills not found in candidate profile (rendered red with learning recommendations).
+* Bonus Competencies: Preferred skills possessed by candidate (rendered blue).
+6. UI/UX Design System & User Flows
+6.1 Design Tokens & Aesthetics
+* Color Palette:
+   * Primary Brand: #2563EB (Royal Blue - Action & Navigation)
+   * Success / Match: #10B981 (Emerald Green - High Scores & Verified Skills)
+   * Warning / Gap: #EF4444 (Crimson Red - Missing Required Skills)
+   * Neutral Background: #F8FAFC (Slate Light)
+   * Card Surface: #FFFFFF with subtle borders (#E2E8F0) and elevation shadows
+* Typography: Clean sans-serif system stack (Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto)
+* Interactive Elements: Responsive grid layouts, pill tags for skills, radial or bar progress indicators for match percentages.
+6.2 Key Workflows
+1. Candidate Journey:
+Registration $\rightarrow$ Skill Selection & Proficiency Rating $\rightarrow$ Job Feed (Ranked by Match %) $\rightarrow$ Job Detail View $\rightarrow$ Skill Gap Breakdown Review $\rightarrow$ 1-Click Application.
+2. Recruiter Journey:
+Registration $\rightarrow$ Post New Job $\rightarrow$ Tag Mandatory & Preferred Skills with Weights $\rightarrow$ View Ranked Pipeline Dashboard $\rightarrow$ Filter Candidates by Threshold (e.g., $\ge$ 80%) $\rightarrow$ Update Application Status (Shortlist/Reject).
+7. REST API Specifications
+Method
+	Endpoint
+	Description
+	Access Role
+	POST
+	/api/v1/auth/signup
+	Register user with email, password, and role
+	Public
+	POST
+	/api/v1/auth/login
+	Authenticate user and receive JWT session
+	Public
+	GET
+	/api/v1/skills
+	Search and autocomplete standard skills
+	Authenticated
+	GET
+	/api/v1/users/me/skills
+	Retrieve candidate profile skills
+	Seeker
+	POST
+	/api/v1/users/me/skills
+	Add or update candidate skills
+	Seeker
+	POST
+	/api/v1/jobs
+	Publish a new job with weighted skill criteria
+	Recruiter
+	GET
+	/api/v1/jobs/feed
+	Get paginated job feed with pre-computed match scores
+	Seeker
+	GET
+	/api/v1/jobs/{job_id}
+	Retrieve detailed job info and candidate skill gap
+	Authenticated
+	GET
+	/api/v1/jobs/{job_id}/candidates
+	Get ranked applicant list sorted by match score
+	Recruiter (Owner)
+	POST
+	/api/v1/jobs/{job_id}/apply
+	Submit job application and save match score
+	Seeker
+	8. Implementation Roadmap
+   1. Phase 1 - Database & Project Setup:
+Initialize Supabase instance, execute schema DDL, configure Row Level Security rules, and load initial skills taxonomy.
+   2. Phase 2 - Backend Authentication & CRUD:
+Set up FastAPI project with Pydantic models, Supabase Auth verification, profile endpoints, and job posting CRUD.
+   3. Phase 3 - Matching Engine & Gap Analyzer:
+Implement mathematical scoring service, unit test edge cases (zero skills, full match, partial match), and build gap analysis payload.
+   4. Phase 4 - Frontend Development:
+Build responsive HTML5/CSS3 templates, write modular vanilla JS controllers, integrate API client with local JWT storage, and build real-time match meters.
+   5. Phase 5 - Verification, Testing & Deployment:
+End-to-end integration testing, secure environment configuration, backend hosting (Render / Railway), and frontend hosting.

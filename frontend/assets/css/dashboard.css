@@ -1,0 +1,134 @@
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+    padding: 2rem 0;
+}
+
+/* Sidebar styling */
+.sidebar {
+    background: var(--card-surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    height: fit-content;
+}
+
+.profile-card {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.profile-card h3 {
+    margin-bottom: 0.25rem;
+}
+
+.profile-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.nav-links {
+    list-style: none;
+}
+
+.nav-links li {
+    margin-bottom: 0.5rem;
+}
+
+.nav-links a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: var(--text-main);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    font-weight: 500;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    background-color: #EFF6FF;
+    color: var(--primary-brand);
+}
+
+/* Main Content Area */
+.main-content {
+    background: var(--card-surface);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Cards & Feeds */
+.job-card, .candidate-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.job-card:hover, .candidate-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+/* Badges & Tags */
+.skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-green { background-color: #D1FAE5; color: #065F46; } /* Match */
+.badge-red { background-color: #FEE2E2; color: #991B1B; } /* Gap */
+.badge-blue { background-color: #DBEAFE; color: #1E40AF; } /* Bonus */
+.badge-neutral { background-color: #F1F5F9; color: #475569; }
+
+/* Progress & Gap Analysis */
+.match-score-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.match-score-text {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--success);
+}
+
+/* Forms in Dashboard */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}

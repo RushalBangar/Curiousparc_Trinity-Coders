@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Dashboard - SkillBridge</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>SkillBridge</h1>
+            <nav>
+                <a href="#" onclick="window.Auth.logout(); return false;" class="btn-secondary">Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="profile-card">
+                <h3 id="profileName">Loading...</h3>
+                <p id="profileHeadline">Candidate</p>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active" onclick="showTab('jobs'); return false;">Job Feed</a></li>
+                <li><a href="#" onclick="showTab('skills'); return false;">My Skills</a></li>
+                <li><a href="#" onclick="showTab('applications'); return false;">My Applications</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Jobs Tab -->
+            <section id="jobsTab">
+                <div class="section-header">
+                    <h2>Recommended Jobs</h2>
+                </div>
+                <div id="jobFeedContainer">
+                    <p>Loading jobs...</p>
+                </div>
+            </section>
+
+            <!-- Skills Tab -->
+            <section id="skillsTab" style="display: none;">
+                <div class="section-header">
+                    <h2>Manage My Skills</h2>
+                </div>
+                
+                <div class="job-card">
+                    <h4>Add a New Skill</h4>
+                    <form id="addSkillForm" style="margin-top: 1rem;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="skillSelect">Select Skill</label>
+                                <select id="skillSelect" required>
+                                    <option value="">Loading skills...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="proficiency">Proficiency</label>
+                                <select id="proficiency" required>
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                    <option value="expert">Expert</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="yearsExp">Years of Experience</label>
+                                <input type="number" id="yearsExp" min="0" step="0.5" required>
+                            </div>
+                            <div class="form-group" style="display: flex; align-items: flex-end;">
+                                <button type="submit" class="btn-primary w-full">Save Skill</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <h4>My Current Skills</h4>
+                <div id="mySkillsContainer" class="skill-tags" style="margin-top: 1rem;">
+                    <!-- Skills injected via JS -->
+                </div>
+            </section>
+
+            <!-- Applications Tab -->
+            <section id="applicationsTab" style="display: none;">
+                <div class="section-header">
+                    <h2>Application History</h2>
+                </div>
+                <div id="applicationsContainer">
+                    <p>Feature coming soon...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Gap Analysis Modal (Simplified directly in DOM for now) -->
+    <div id="jobDetailModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+        <div style="background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <h2 id="modalJobTitle">Job Title</h2>
+                <button onclick="document.getElementById('jobDetailModal').style.display='none'" class="btn-secondary">Close</button>
+            </div>
+            
+            <div class="match-score-container" style="margin-bottom: 1.5rem; padding: 1rem; background: var(--neutral-bg); border-radius: 8px;">
+                <div style="flex-grow: 1;">
+                    <h3 style="margin-bottom: 0;">Skill Compatibility Match</h3>
+                </div>
+                <div class="match-score-text" id="modalMatchScore">--%</div>
+            </div>
+
+            <div id="gapAnalysisContent">
+                <!-- Rendered dynamically -->
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <button id="applyBtn" class="btn-primary w-full" onclick="applyForJob()">Apply Now</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/candidate.js"></script>
+    <script>
+        // Simple tab switching
+        function showTab(tabName) {
+            document.getElementById('jobsTab').style.display = 'none';
+            document.getElementById('skillsTab').style.display = 'none';
+            document.getElementById('applicationsTab').style.display = 'none';
+            
+            document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById(tabName + 'Tab').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
