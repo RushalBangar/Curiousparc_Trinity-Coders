@@ -3,39 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Detail - SkillBridge</title>
+    <title>Role Compatibility Breakdown — SkillBridge</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
 </head>
-<body style="background-color: var(--neutral-bg);">
-    <header>
+<body>
+    <header class="site-header">
         <div class="container">
-            <h1>SkillBridge</h1>
-            <nav>
-                <a href="candidate-dashboard.html">Back to Dashboard</a>
+            <a href="index.html" class="brand-logo">
+                <div class="brand-icon">⚡</div>
+                <span>Skill<span class="brand-gradient-text">Bridge</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="candidate-dashboard.html">← Back to Candidate Workspace</a>
             </nav>
         </div>
     </header>
 
-    <div class="container" style="max-width: 800px; padding: 2rem 20px;">
+    <div class="container" style="max-width: 860px; padding: 3rem 1.5rem;">
+        <!-- Job Meta Card -->
         <div class="card" style="margin-bottom: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
                 <div>
-                    <h2 id="jobTitle" style="color: var(--primary-brand); font-size: 2rem;">Loading...</h2>
-                    <p id="jobMeta" style="color: var(--text-muted); font-size: 1.1rem;"></p>
+                    <span class="badge badge-purple" style="margin-bottom: 0.5rem;">Role Overview</span>
+                    <h1 id="jobTitle" style="font-size: 2rem; color: var(--text-primary); margin-bottom: 0.35rem;">Loading Role...</h1>
+                    <div class="job-meta-row" id="jobMeta">
+                        <span class="meta-pill">Acme Labs</span>
+                        <span class="meta-pill">Remote</span>
+                        <span class="meta-pill">Full-Time</span>
+                    </div>
                 </div>
-                <button id="applyBtn" class="btn-primary" onclick="applyToJob()">Apply Now</button>
+                <button id="applyBtn" class="btn-primary btn-lg" onclick="applyToJob()">
+                    <span>Apply to Position</span> →
+                </button>
             </div>
-            <div style="margin-top: 1.5rem;">
-                <h3>Job Description</h3>
-                <p id="jobDescription" style="white-space: pre-line; margin-top: 0.5rem; color: var(--text-main);"></p>
+            
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+                <h3 style="font-size: 1.15rem; margin-bottom: 0.5rem; color: var(--text-primary);">Role Description & Scope</h3>
+                <p id="jobDescription" style="white-space: pre-line; color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem;"></p>
             </div>
         </div>
 
+        <!-- Real-time Gap Analysis Card -->
         <div class="card" id="gapAnalysisContainer">
-            <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Your Skill Gap Analysis</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+                <div>
+                    <h2 style="font-size: 1.35rem; color: var(--text-primary);">Personalized Match Analysis</h2>
+                    <p style="font-size: 0.875rem; color: var(--text-muted);">Real-time comparison between your profile and required technical competencies</p>
+                </div>
+                <span class="badge badge-blue">Dual-Tier Algorithm</span>
+            </div>
+
             <div id="matchingRenderArea">
-                <p>Loading analysis...</p>
+                <div class="empty-state">
+                    <div class="empty-state-icon">⏳</div>
+                    <h4>Computing Match Score...</h4>
+                    <p>Evaluating mandatory (75%) and preferred (25%) competency weights.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -51,35 +76,51 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!jobId) {
-                document.body.innerHTML = '<div class="container" style="padding: 2rem;"><h2>Invalid Job ID</h2></div>';
+                document.body.innerHTML = `
+                    <div class="container" style="padding: 4rem 1.5rem; text-align: center;">
+                        <h2>Invalid Position Link</h2>
+                        <p style="margin: 1rem 0 1.5rem; color: var(--text-muted);">No job ID was provided in the URL parameter.</p>
+                        <a href="candidate-dashboard.html" class="btn-primary">Return to Dashboard</a>
+                    </div>
+                `;
                 return;
             }
 
             try {
                 const jobDetail = await window.ApiClient.get(`/jobs/${jobId}`);
                 document.getElementById('jobTitle').textContent = jobDetail.title;
-                document.getElementById('jobMeta').textContent = `${jobDetail.company_name} • ${jobDetail.location} • ${jobDetail.employment_type}`;
+                document.getElementById('jobMeta').innerHTML = `
+                    <span class="meta-pill">🏢 ${jobDetail.company_name}</span>
+                    <span class="meta-pill">📍 ${jobDetail.location}</span>
+                    <span class="meta-pill">⏱️ ${jobDetail.employment_type}</span>
+                `;
                 document.getElementById('jobDescription').textContent = jobDetail.description;
 
-                // Use the matching UI utility
+                // Render with matching UI visualizer
                 const container = document.getElementById('matchingRenderArea');
                 window.MatchingUI.renderGapAnalysis(jobDetail.gap_analysis, container);
                 
             } catch (error) {
-                alert("Failed to load job details.");
+                window.Toast.error("Failed to load position details.", "Error");
             }
         });
 
         async function applyToJob() {
             const btn = document.getElementById('applyBtn');
-            btn.disabled = true; btn.textContent = 'Applying...';
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Submitting...';
+            btn.disabled = true;
+
             try {
                 await window.ApiClient.post(`/jobs/${jobId}/apply`, {});
-                alert('Successfully applied!');
-                window.location.href = 'candidate-dashboard.html';
+                window.Toast.success('Applied successfully with verified match score lock!', 'Success');
+                setTimeout(() => {
+                    window.location.href = 'candidate-dashboard.html';
+                }, 1200);
             } catch (error) {
-                alert('Failed to apply: ' + error.message);
-                btn.disabled = false; btn.textContent = 'Apply Now';
+                window.Toast.error(error.message || 'Failed to submit application.', 'Error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
     </script>

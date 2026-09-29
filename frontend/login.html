@@ -3,50 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SkillBridge</title>
+    <title>Sign In — SkillBridge</title>
     <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body>
-    <div class="auth-container">
+    <div class="auth-wrapper">
         <div class="auth-card">
-            <h2>Welcome Back</h2>
-            <p>Sign in to continue to SkillBridge</p>
+            <div class="auth-header">
+                <a href="index.html" class="auth-brand">
+                    <div class="brand-icon">⚡</div>
+                    <span>Skill<span class="brand-gradient-text">Bridge</span></span>
+                </a>
+                <h2>Welcome Back</h2>
+                <p>Sign in to view your personalized match feeds</p>
+            </div>
             
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required>
+                    <label for="email">Work or Personal Email</label>
+                    <input type="email" id="email" placeholder="name@example.com" required autocomplete="email">
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+                        <label for="password" style="margin-bottom: 0;">Password</label>
+                        <a href="#" style="font-size: 0.8rem; color: var(--text-muted);" onclick="alert('Password reset link has been dispatched in sandbox mode.'); return false;">Forgot?</a>
+                    </div>
+                    <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
                 </div>
                 
-                <button type="submit" class="btn-primary w-full">Sign In</button>
+                <button type="submit" class="btn-primary w-full btn-lg" style="margin-top: 0.5rem;" id="submitBtn">
+                    <span>Sign In</span>
+                </button>
             </form>
+
+            <!-- Quick Demo Credentials Helper for instant testing -->
+            <div style="margin-top: 1.5rem; padding: 0.85rem; background: var(--bg-muted); border-radius: var(--radius-md); font-size: 0.825rem; border: 1px dashed var(--border-subtle); text-align: center;">
+                <span style="font-weight: 700; color: var(--text-primary);">⚡ Quick Fill Demo:</span>
+                <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.4rem;">
+                    <button type="button" class="badge badge-purple" style="cursor: pointer; border: 1px solid #ddd6fe;" onclick="fillDemo('candidate@skillbridge.io')">Candidate</button>
+                    <button type="button" class="badge badge-blue" style="cursor: pointer; border: 1px solid #bfdbfe;" onclick="fillDemo('recruiter@skillbridge.io')">Recruiter</button>
+                </div>
+            </div>
             
-            <p class="auth-footer">Don't have an account? <a href="register.html">Sign up</a></p>
+            <p class="auth-footer">
+                Don't have an account yet? <a href="register.html">Create an account</a>
+            </p>
         </div>
+
+        <a href="index.html" class="back-home-link">
+            ← Return to SkillBridge Homepage
+        </a>
     </div>
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
     <script>
+        function fillDemo(email) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = 'password123';
+            window.Toast.info(`Filled credentials for ${email}`, 'Demo Mode');
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             
-            const btn = e.target.querySelector('button');
-            btn.textContent = 'Signing in...';
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>Authenticating...</span>';
             btn.disabled = true;
             
-            await window.Auth.login(email, password);
-            
-            btn.textContent = 'Sign In';
-            btn.disabled = false;
+            try {
+                await window.Auth.login(email, password);
+                window.Toast.success('Login verified! Redirecting...', 'Welcome');
+            } catch (err) {
+                window.Toast.error(err.message || 'Invalid email or password.', 'Sign In Failed');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         });
     </script>
 </body>

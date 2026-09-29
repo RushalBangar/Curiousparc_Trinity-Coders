@@ -3,75 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - SkillBridge</title>
+    <title>Get Started — SkillBridge</title>
     <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body>
-    <div class="auth-container">
+    <div class="auth-wrapper">
         <div class="auth-card">
-            <h2>Create Account</h2>
-            <p>Join SkillBridge today</p>
+            <div class="auth-header">
+                <a href="index.html" class="auth-brand">
+                    <div class="brand-icon">⚡</div>
+                    <span>Skill<span class="brand-gradient-text">Bridge</span></span>
+                </a>
+                <h2>Create Your Account</h2>
+                <p>Join the bias-free competency matching network</p>
+            </div>
             
+            <!-- Segmented Role Selector -->
+            <div class="role-segmented-control">
+                <button type="button" class="role-segment-btn active" id="btnRoleSeeker" onclick="setRole('seeker')">
+                    <span>👤</span> Candidate
+                </button>
+                <button type="button" class="role-segment-btn" id="btnRoleRecruiter" onclick="setRole('recruiter')">
+                    <span>🏢</span> Employer
+                </button>
+            </div>
+
             <form id="registerForm">
+                <input type="hidden" id="role" value="seeker">
+
                 <div class="form-group">
-                    <label for="fullName">Full Name</label>
-                    <input type="text" id="fullName" required>
+                    <label for="fullName">Full Legal Name</label>
+                    <input type="text" id="fullName" placeholder="e.g. Alex Morgan" required autocomplete="name">
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required>
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="alex@domain.com" required autocomplete="email">
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required minlength="6">
-                </div>
-
-                <div class="form-group">
-                    <label for="role">I am a...</label>
-                    <select id="role" required>
-                        <option value="seeker">Job Seeker</option>
-                        <option value="recruiter">Recruiter / Employer</option>
-                    </select>
+                    <label for="password">Choose Password</label>
+                    <input type="password" id="password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password">
                 </div>
                 
-                <button type="submit" class="btn-primary w-full">Sign Up</button>
+                <button type="submit" class="btn-primary w-full btn-lg" style="margin-top: 0.5rem;" id="submitBtn">
+                    <span>Complete Registration</span>
+                </button>
             </form>
             
-            <p class="auth-footer">Already have an account? <a href="login.html">Sign in</a></p>
+            <p class="auth-footer">
+                Already registered? <a href="login.html">Sign in instead</a>
+            </p>
         </div>
+
+        <a href="index.html" class="back-home-link">
+            ← Return to SkillBridge Homepage
+        </a>
     </div>
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
     <script>
+        function setRole(role) {
+            document.getElementById('role').value = role;
+            const btnSeeker = document.getElementById('btnRoleSeeker');
+            const btnRecruiter = document.getElementById('btnRoleRecruiter');
+            
+            if (role === 'seeker') {
+                btnSeeker.classList.add('active');
+                btnRecruiter.classList.remove('active');
+            } else {
+                btnRecruiter.classList.add('active');
+                btnSeeker.classList.remove('active');
+            }
+        }
+
         // Check if role is passed in query params
         const urlParams = new URLSearchParams(window.location.search);
         const preSelectedRole = urlParams.get('role');
         if (preSelectedRole && (preSelectedRole === 'seeker' || preSelectedRole === 'recruiter')) {
-            document.getElementById('role').value = preSelectedRole;
+            setRole(preSelectedRole);
         }
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const userData = {
-                full_name: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
+                full_name: document.getElementById('fullName').value.trim(),
+                email: document.getElementById('email').value.trim(),
                 password: document.getElementById('password').value,
                 role: document.getElementById('role').value
             };
             
-            const btn = e.target.querySelector('button');
-            btn.textContent = 'Creating Account...';
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>Creating Profile...</span>';
             btn.disabled = true;
             
-            await window.Auth.register(userData);
-            
-            btn.textContent = 'Sign Up';
-            btn.disabled = false;
+            try {
+                await window.Auth.register(userData);
+                window.Toast.success('Account created successfully! Redirecting...', 'Success');
+            } catch (err) {
+                window.Toast.error(err.message || 'Registration failed. Please try again.', 'Error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         });
     </script>
 </body>

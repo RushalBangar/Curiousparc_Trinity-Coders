@@ -29,7 +29,8 @@ class ApiClient {
                 // Auto-logout if token is expired/invalid (401)
                 if (response.status === 401) {
                     localStorage.removeItem('access_token');
-                    window.location.href = '/login.html';
+                    localStorage.removeItem('user_profile');
+                    window.location.href = 'login.html';
                 }
                 throw new Error(data?.detail || data?.message || 'API request failed');
             }
@@ -66,4 +67,63 @@ class ApiClient {
     }
 }
 
+// Modern, Non-blocking Toast Notification Service
+class ToastService {
+    static getContainer() {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+
+    static show(message, type = 'info', title = null) {
+        const container = this.getContainer();
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+
+        const icons = {
+            success: '✓',
+            error: '✕',
+            info: 'ℹ',
+            warning: '⚠'
+        };
+
+        const titles = {
+            success: 'Success',
+            error: 'Error',
+            info: 'Notice',
+            warning: 'Warning'
+        };
+
+        const iconSymbol = icons[type] || 'ℹ';
+        const displayTitle = title || titles[type] || 'Notice';
+
+        toast.innerHTML = `
+            <div class="toast-icon" style="color: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--info)'}">${iconSymbol}</div>
+            <div class="toast-content">
+                <div class="toast-title">${displayTitle}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button type="button" class="btn-ghost" style="padding: 0.2rem 0.4rem; font-size: 0.85rem;" onclick="this.parentElement.remove()">✕</button>
+        `;
+
+        container.appendChild(toast);
+
+        // Auto remove after 4.5 seconds
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(12px) scale(0.95)';
+            setTimeout(() => toast.remove(), 250);
+        }, 4500);
+    }
+
+    static success(msg, title) { this.show(msg, 'success', title); }
+    static error(msg, title) { this.show(msg, 'error', title); }
+    static info(msg, title) { this.show(msg, 'info', title); }
+}
+
 window.ApiClient = ApiClient;
+window.Toast = ToastService;

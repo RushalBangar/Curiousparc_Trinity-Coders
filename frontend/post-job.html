@@ -3,88 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post Job - SkillBridge</title>
+    <title>Create Job Posting — SkillBridge</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/dashboard.css">
 </head>
 <body>
-    <header>
+    <header class="site-header">
         <div class="container">
-            <h1>SkillBridge</h1>
-            <nav>
-                <a href="recruiter-dashboard.html">Back to Dashboard</a>
-                <a href="#" onclick="window.Auth.logout(); return false;" class="btn-secondary">Logout</a>
+            <a href="index.html" class="brand-logo">
+                <div class="brand-icon">⚡</div>
+                <span>Skill<span class="brand-gradient-text">Bridge</span></span>
+            </a>
+            <nav class="main-nav">
+                <a href="recruiter-dashboard.html">← Back to Recruiter Workspace</a>
             </nav>
         </div>
     </header>
 
-    <div class="container" style="max-width: 800px; padding: 2rem 20px;">
+    <div class="container" style="max-width: 860px; padding: 3rem 1.5rem;">
         <div class="card">
-            <h2 style="margin-bottom: 1.5rem; color: var(--primary-brand);">Create New Job Posting</h2>
+            <div class="card-header">
+                <div>
+                    <span class="badge badge-purple" style="margin-bottom: 0.5rem;">Role Creator</span>
+                    <h2 style="font-size: 1.75rem; color: var(--text-primary);">Publish Weighted Technical Role</h2>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">Set up mandatory prerequisites and preferred bonus competencies</p>
+                </div>
+            </div>
             
             <form id="postJobFormStandalone">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Job Title</label>
-                        <input type="text" id="jobTitle" required>
+                        <label for="jobTitle">Job Title</label>
+                        <input type="text" id="jobTitle" placeholder="e.g. Lead Distributed Systems Engineer" required>
                     </div>
                     <div class="form-group">
-                        <label>Company Name</label>
-                        <input type="text" id="companyName" required>
+                        <label for="companyName">Company / Department Name</label>
+                        <input type="text" id="companyName" placeholder="e.g. CloudScale Systems" required>
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Location</label>
-                        <input type="text" id="jobLocation" required>
+                        <label for="jobLocation">Location or Work Model</label>
+                        <input type="text" id="jobLocation" placeholder="e.g. Remote (US Timezones) or San Francisco, CA" required>
                     </div>
                     <div class="form-group">
-                        <label>Employment Type</label>
+                        <label for="employmentType">Employment Type</label>
                         <select id="employmentType" required>
-                            <option value="full-time">Full-Time</option>
+                            <option value="full-time">Full-Time Employee</option>
                             <option value="part-time">Part-Time</option>
-                            <option value="contract">Contract</option>
+                            <option value="contract">Contractor / Freelance</option>
                             <option value="internship">Internship</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="jobDescription" rows="5" required></textarea>
+                    <label for="jobDescription">Role Overview & Responsibilities</label>
+                    <textarea id="jobDescription" rows="5" placeholder="Outline the team mission, core tech challenges, and required backgrounds..." required></textarea>
                 </div>
 
-                <h3 style="margin: 2rem 0 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Required & Preferred Skills</h3>
+                <div style="margin: 2rem 0 1rem; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem;">
+                    <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.35rem;">Attach Weighted Technical Competencies</h3>
+                    <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                        Candidates will be mathematically scored based on these requirements (75% Mandatory + 25% Preferred).
+                    </p>
+                </div>
                 
-                <div id="standaloneSkillsContainer" class="skill-tags" style="margin-bottom: 1rem;"></div>
+                <div id="standaloneSkillsContainer" class="skill-tags" style="margin-bottom: 1.25rem; min-height: 40px;">
+                    <span style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No skills attached yet. Select below to add.</span>
+                </div>
                 
-                <div class="card" style="background: var(--neutral-bg); margin-bottom: 2rem;">
+                <div class="card" style="background: var(--bg-muted); border: 1px solid var(--border-subtle); margin-bottom: 2rem;">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Select Skill</label>
-                            <select id="jobSkillSelect"></select>
+                            <label for="jobSkillSelect">Select Standard Skill</label>
+                            <select id="jobSkillSelect">
+                                <option value="">Loading taxonomy...</option>
+                            </select>
                         </div>
                         <div class="form-group">
-                            <label>Requirement Level</label>
+                            <label for="jobSkillRequired">Requirement Level</label>
                             <select id="jobSkillRequired">
-                                <option value="true">Mandatory</option>
-                                <option value="false">Bonus/Preferred</option>
+                                <option value="true">Mandatory (75% Match Weight)</option>
+                                <option value="false">Preferred Bonus (25% Match Weight)</option>
                             </select>
                         </div>
                     </div>
-                    <button type="button" class="btn-secondary" onclick="addStandaloneSkill()">Add Skill to Job</button>
+                    <button type="button" class="btn-secondary" onclick="addStandaloneSkill()">+ Add Competency to Job</button>
                 </div>
 
-                <button type="submit" class="btn-primary w-full" style="padding: 1rem; font-size: 1.1rem;">Publish Job</button>
+                <button type="submit" class="btn-primary w-full btn-lg" id="submitBtn">
+                    <span>Publish Job Posting</span>
+                </button>
             </form>
         </div>
     </div>
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
-    <!-- Note: A standalone script for this page would normally be isolated, reusing recruiter logic for brevity here -->
     <script>
         window.Auth.protectRoute(['recruiter']);
         
@@ -95,26 +113,36 @@
             try {
                 const skills = await window.ApiClient.get('/skills');
                 const select = document.getElementById('jobSkillSelect');
-                skills.forEach(s => localSkillsMap[s.id] = s.name);
-                select.innerHTML = '<option value="">Select a skill...</option>' + 
-                    skills.map(s => `<option value="${s.id}">${s.name} (${s.category})</option>`).join('');
+                if (skills && skills.length > 0) {
+                    skills.forEach(s => localSkillsMap[s.id] = s.name);
+                    select.innerHTML = '<option value="">Select competency to add...</option>' + 
+                        skills.map(s => `<option value="${s.id}">${s.name} (${s.category})</option>`).join('');
+                }
             } catch (error) {
-                console.error("Failed to load skills", error);
+                console.error("Failed to load skills taxonomy", error);
             }
         });
 
         function addStandaloneSkill() {
             const select = document.getElementById('jobSkillSelect');
             const requiredSelect = document.getElementById('jobSkillRequired');
-            if (!select.value) return;
-            if (localDraftSkills.some(s => s.skill_id === select.value)) return alert("Skill already added");
+            if (!select.value) {
+                window.Toast.info("Please pick a skill to attach.", "Notice");
+                return;
+            }
+            if (localDraftSkills.some(s => s.skill_id === select.value)) {
+                window.Toast.warning("Skill is already attached to this posting.", "Notice");
+                return;
+            }
             
+            const isReq = requiredSelect.value === 'true';
             localDraftSkills.push({
                 skill_id: select.value,
-                is_required: requiredSelect.value === 'true',
-                weight: 1.0
+                is_required: isReq,
+                weight: isReq ? 2.0 : 1.0
             });
             renderStandaloneSkills();
+            window.Toast.success(`Added ${localSkillsMap[select.value]}`, "Competency Attached");
         }
 
         function removeStandaloneSkill(id) {
@@ -123,36 +151,47 @@
         }
 
         function renderStandaloneSkills() {
-            document.getElementById('standaloneSkillsContainer').innerHTML = localDraftSkills.map(s => `
-                <span class="badge ${s.is_required ? 'badge-red' : 'badge-blue'}">
-                    ${s.is_required ? 'Req:' : 'Pref:'} ${localSkillsMap[s.skill_id]} 
-                    <button type="button" style="background:none; border:none; margin-left:5px; cursor:pointer;" onclick="removeStandaloneSkill('${s.skill_id}')">×</button>
+            const container = document.getElementById('standaloneSkillsContainer');
+            if (localDraftSkills.length === 0) {
+                container.innerHTML = '<span style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No skills attached yet. Select below to add.</span>';
+                return;
+            }
+
+            container.innerHTML = localDraftSkills.map(s => `
+                <span class="badge ${s.is_required ? 'badge-red' : 'badge-blue'}" style="padding: 0.45rem 0.85rem; font-size: 0.825rem;">
+                    ${s.is_required ? 'Req (75%):' : 'Pref (25%):'} ${localSkillsMap[s.skill_id]} 
+                    <button type="button" style="background:none; border:none; margin-left:6px; cursor:pointer; color:inherit; font-weight:bold;" onclick="removeStandaloneSkill('${s.skill_id}')">✕</button>
                 </span>
             `).join('');
         }
 
         document.getElementById('postJobFormStandalone').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            btn.disabled = true; btn.textContent = "Publishing...";
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>Publishing Role...</span>';
+            btn.disabled = true;
 
             const payload = {
-                title: document.getElementById('jobTitle').value,
-                company_name: document.getElementById('companyName').value,
-                location: document.getElementById('jobLocation').value,
+                title: document.getElementById('jobTitle').value.trim(),
+                company_name: document.getElementById('companyName').value.trim(),
+                location: document.getElementById('jobLocation').value.trim(),
                 employment_type: document.getElementById('employmentType').value,
-                description: document.getElementById('jobDescription').value,
+                description: document.getElementById('jobDescription').value.trim(),
                 is_active: true,
                 skills: localDraftSkills
             };
 
             try {
                 await window.ApiClient.post('/jobs', payload);
-                alert('Job posted successfully!');
-                window.location.href = 'recruiter-dashboard.html';
+                window.Toast.success('Job published successfully!', 'Success');
+                setTimeout(() => {
+                    window.location.href = 'recruiter-dashboard.html';
+                }, 1200);
             } catch (error) {
-                alert("Failed to post job: " + error.message);
-                btn.disabled = false; btn.textContent = "Publish Job";
+                window.Toast.error(error.message || "Failed to publish job.", "Error");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         });
     </script>

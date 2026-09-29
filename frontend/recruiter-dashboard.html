@@ -3,122 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recruiter Dashboard - SkillBridge</title>
+    <title>Recruiter Workspace — SkillBridge</title>
     <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/dashboard.css">
 </head>
 <body>
-    <header>
+    <!-- Site Header -->
+    <header class="site-header">
         <div class="container">
-            <h1>SkillBridge</h1>
-            <nav>
-                <a href="#" onclick="window.Auth.logout(); return false;" class="btn-secondary">Logout</a>
-            </nav>
+            <a href="index.html" class="brand-logo">
+                <div class="brand-icon">⚡</div>
+                <span>Skill<span class="brand-gradient-text">Bridge</span></span>
+            </a>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span class="badge badge-blue" style="font-weight: 700;">Employer Mode</span>
+                <button onclick="window.Auth.logout()" class="btn-secondary btn-sm">Sign Out</button>
+            </div>
         </div>
     </header>
 
-    <div class="container dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="profile-card">
-                <h3 id="profileName">Loading...</h3>
-                <p id="profileHeadline">Recruiter</p>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#" class="active" onclick="showTab('myJobs'); return false;">My Job Postings</a></li>
-                <li><a href="#" onclick="showTab('postJob'); return false;">Post New Job</a></li>
-            </ul>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- My Jobs Tab -->
-            <section id="myJobsTab">
-                <div class="section-header">
-                    <h2>My Active Jobs</h2>
-                </div>
-                <div id="recruiterJobsContainer">
-                    <p>Loading jobs...</p>
-                </div>
-            </section>
-
-            <!-- Post Job Tab -->
-            <section id="postJobTab" style="display: none;">
-                <div class="section-header">
-                    <h2>Create New Job Posting</h2>
-                </div>
-                
-                <form id="postJobForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Job Title</label>
-                            <input type="text" id="jobTitle" required>
+    <div class="container dashboard-wrapper">
+        <div class="dashboard-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="user-profile-widget">
+                    <div class="user-avatar" id="avatarInitials" style="background: linear-gradient(135deg, #2563eb, #06b6d4);">R</div>
+                    <h3 class="user-name" id="profileName">Loading...</h3>
+                    <span class="user-role-badge" id="profileHeadline">Recruiter</span>
+                    
+                    <div style="margin-top: 1.25rem; padding: 0.75rem; background: var(--bg-muted); border-radius: var(--radius-md); font-size: 0.85rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <span style="color: var(--text-muted);">Active Postings:</span>
+                            <strong id="sidebarJobCount" style="color: var(--primary-600);">0</strong>
                         </div>
-                        <div class="form-group">
-                            <label>Company Name</label>
-                            <input type="text" id="companyName" required>
+                    </div>
+                </div>
+
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="#" class="active" id="navMyJobs" onclick="showTab('myJobs'); return false;">
+                            <span class="nav-icon">📋</span> Managed Roles
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" id="navPostJob" onclick="showTab('postJob'); return false;">
+                            <span class="nav-icon">✨</span> Create Job Post
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Stats Metric Strip -->
+                <div class="stats-strip">
+                    <div class="stat-box">
+                        <div class="stat-icon" style="background: var(--info-bg); color: var(--info);">📌</div>
+                        <div class="stat-info">
+                            <h4 id="statTotalJobs">0</h4>
+                            <p>Published Roles</p>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon" style="background: var(--success-bg); color: var(--success);">👥</div>
+                        <div class="stat-info">
+                            <h4 id="statTotalApplicants">Active</h4>
+                            <p>Pipeline Status</p>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon" style="background: #fef3c7; color: #b45309;">⚖️</div>
+                        <div class="stat-info">
+                            <h4>75 / 25</h4>
+                            <p>Algorithm Split</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. Managed Jobs Tab -->
+                <section id="myJobsTab" class="dashboard-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title">Your Job Postings</h2>
+                            <p class="panel-subtitle">Review applicant rankings calculated with weighted competency matching</p>
+                        </div>
+                        <button class="btn-primary" onclick="showTab('postJob')">+ New Job</button>
+                    </div>
+
+                    <div id="recruiterJobsContainer">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⏳</div>
+                            <h4>Loading Job Postings...</h4>
+                            <p>Retrieving your company roles from database.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. Post Job Tab -->
+                <section id="postJobTab" class="dashboard-panel" style="display: none;">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title">Publish Weighted Job Posting</h2>
+                            <p class="panel-subtitle">Define role prerequisites and attach weighted competencies</p>
                         </div>
                     </div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Location</label>
-                            <input type="text" id="jobLocation" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Employment Type</label>
-                            <select id="employmentType" required>
-                                <option value="full-time">Full-Time</option>
-                                <option value="part-time">Part-Time</option>
-                                <option value="contract">Contract</option>
-                                <option value="internship">Internship</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="jobDescription" rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;" required></textarea>
-                    </div>
-
-                    <h4>Required & Preferred Skills</h4>
-                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Add the technical competencies required for this role.</p>
-                    
-                    <div id="selectedSkillsContainer" class="skill-tags" style="margin-bottom: 1rem;"></div>
-                    
-                    <div class="job-card" style="background: var(--neutral-bg);">
+                    <form id="postJobForm">
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Select Skill</label>
-                                <select id="jobSkillSelect"></select>
+                                <label for="jobTitle">Job Title</label>
+                                <input type="text" id="jobTitle" placeholder="e.g. Senior Backend Engineer" required>
                             </div>
                             <div class="form-group">
-                                <label>Is this Mandatory?</label>
-                                <select id="jobSkillRequired">
-                                    <option value="true">Required (Mandatory)</option>
-                                    <option value="false">Preferred (Bonus)</option>
+                                <label for="companyName">Company / Team Name</label>
+                                <input type="text" id="companyName" placeholder="e.g. Acme Tech Labs" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="jobLocation">Location / Remote Policy</label>
+                                <input type="text" id="jobLocation" placeholder="e.g. Remote (US/EU) or New York, NY" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="employmentType">Employment Type</label>
+                                <select id="employmentType" required>
+                                    <option value="full-time">Full-Time Employee</option>
+                                    <option value="part-time">Part-Time</option>
+                                    <option value="contract">Contractor / Consultant</option>
+                                    <option value="internship">Internship</option>
                                 </select>
                             </div>
                         </div>
-                        <button type="button" class="btn-secondary" onclick="addSkillToDraft()">+ Add Skill to Job</button>
-                    </div>
+                        
+                        <div class="form-group">
+                            <label for="jobDescription">Role Responsibilities & Overview</label>
+                            <textarea id="jobDescription" rows="4" placeholder="Detail the core objectives, day-to-day work, and tech stack expectations..." required></textarea>
+                        </div>
 
-                    <button type="submit" class="btn-primary w-full" style="margin-top: 2rem;">Publish Job</button>
-                </form>
-            </section>
-        </main>
+                        <div style="margin: 2rem 0 1rem; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem;">
+                            <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.35rem;">Attach Weighted Technical Competencies</h3>
+                            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                                Mandatory skills contribute 75% to candidate match scores. Preferred skills contribute the remaining 25%.
+                            </p>
+                        </div>
+                        
+                        <!-- Selected Draft Skills Cloud -->
+                        <div id="selectedSkillsContainer" class="skill-tags" style="margin-bottom: 1.25rem; min-height: 38px;">
+                            <span style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No skills attached yet. Select below to add.</span>
+                        </div>
+                        
+                        <div class="card" style="background: var(--bg-muted); border: 1px solid var(--border-subtle); margin-bottom: 2rem;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="jobSkillSelect">Select Standard Skill</label>
+                                    <select id="jobSkillSelect">
+                                        <option value="">Loading competencies...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="jobSkillRequired">Requirement Level</label>
+                                    <select id="jobSkillRequired">
+                                        <option value="true">Mandatory (75% Weight)</option>
+                                        <option value="false">Preferred (25% Weight)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-secondary" onclick="addSkillToDraft()">+ Add Competency to Job</button>
+                        </div>
+
+                        <button type="submit" class="btn-primary w-full btn-lg" id="publishJobBtn">
+                            <span>Publish Job to Network</span>
+                        </button>
+                    </form>
+                </section>
+            </main>
+        </div>
     </div>
 
-    <!-- Applicants Modal -->
-    <div id="applicantsModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
-        <div style="background: white; padding: 2rem; border-radius: 12px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
-                <h2>Candidate Pipeline</h2>
-                <button onclick="document.getElementById('applicantsModal').style.display='none'" class="btn-secondary">Close</button>
+    <!-- Candidate Pipeline Modal -->
+    <div id="applicantsModal" class="modal-backdrop" style="display: none;">
+        <div class="modal-content" style="max-width: 720px;">
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size: 1.35rem; margin-bottom: 0.2rem;">Candidate Pipeline</h3>
+                    <p style="font-size: 0.875rem; color: var(--text-muted);">Ranked dynamically by verified mathematical competency match</p>
+                </div>
+                <button type="button" class="btn-close" onclick="closeApplicantsModal()">✕</button>
             </div>
             
-            <div id="applicantsContainer">
-                <!-- Rendered dynamically -->
+            <div class="modal-body" id="applicantsContainer">
+                <!-- Dynamically loaded candidates -->
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeApplicantsModal()">Close</button>
             </div>
         </div>
     </div>
@@ -131,10 +211,16 @@
             document.getElementById('myJobsTab').style.display = 'none';
             document.getElementById('postJobTab').style.display = 'none';
             
-            document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelectorAll('.sidebar-nav a').forEach(el => el.classList.remove('active'));
+            
+            if (tabName === 'myJobs') document.getElementById('navMyJobs').classList.add('active');
+            if (tabName === 'postJob') document.getElementById('navPostJob').classList.add('active');
             
             document.getElementById(tabName + 'Tab').style.display = 'block';
+        }
+
+        function closeApplicantsModal() {
+            document.getElementById('applicantsModal').style.display = 'none';
         }
     </script>
 </body>
