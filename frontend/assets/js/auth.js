@@ -44,6 +44,7 @@ class Auth {
             }
         } catch (error) {
             console.error("Failed to fetch profile", error);
+            throw error;
         }
     }
 
