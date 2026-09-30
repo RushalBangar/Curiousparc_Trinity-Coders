@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from supabase import Client
 from typing import List, Any, Dict
+from uuid import UUID
 from app.core.database import get_supabase_client
 from app.core.security import get_current_user
 from app.models.user import CandidateSkillBase, CandidateSkillDetail, Profile
