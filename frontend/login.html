@@ -55,15 +55,7 @@
                 </button>
             </form>
 
-            <!-- Quick Demo Credentials Helper for instant testing -->
-            <div style="margin-top: 1.5rem; padding: 0.85rem; background: var(--bg-muted); border-radius: var(--radius-md); font-size: 0.825rem; border: 1px dashed var(--border-subtle); text-align: center;">
-                <span style="font-weight: 700; color: var(--text-primary);">⚡ Quick Fill Demo:</span>
-                <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.4rem;">
-                    <button type="button" class="badge badge-purple" style="cursor: pointer; border: 1px solid #ddd6fe;" onclick="fillDemo('candidate@skillbridge.io')">Candidate</button>
-                    <button type="button" class="badge badge-blue" style="cursor: pointer; border: 1px solid #bfdbfe;" onclick="fillDemo('recruiter@skillbridge.io')">Recruiter</button>
-                </div>
-            </div>
-            
+
             <p class="auth-footer">
                 Don't have an account yet? <a href="register.html">Create an account</a>
             </p>
@@ -77,12 +69,6 @@
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
     <script>
-        function fillDemo(email) {
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = 'password123';
-            window.Toast.info(`Filled credentials for ${email}`, 'Demo Mode');
-        }
-
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
