@@ -144,8 +144,13 @@ def get_job_candidates(
     try:
         # Ensure the current user is the owner (recruiter) of the job
         job_check = supabase.table("jobs").select("recruiter_id").eq("id", str(job_id)).single().execute()
-        if job_check.data.get("recruiter_id") != current_user.id:
-            raise HTTPException(status_code=403, detail="Not authorized to view candidates for this job")
+        db_recruiter_id = job_check.data.get("recruiter_id")
+        
+        if str(db_recruiter_id).lower() != str(current_user.id).lower():
+            raise HTTPException(
+                status_code=403, 
+                detail=f"Not authorized. Job owner: {db_recruiter_id}, Current User: {current_user.id}"
+            )
             
         # Fetch applications for this job, sorted by match score descending
         response = supabase.table("applications")\
