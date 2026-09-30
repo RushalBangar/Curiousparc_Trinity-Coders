@@ -196,11 +196,24 @@ async function loadMySkills() {
                     • ${ms.proficiency_level} (${ms.years_experience}y)
                 </span>
                 ${scoreDisplay}
+                <button type="button" onclick="removeSkill('${ms.skill_id}')" style="background: none; border: none; margin-left: 0.5rem; cursor: pointer; color: var(--text-muted); font-weight: bold; font-size: 1rem;" title="Remove Skill">×</button>
             </span>
             `;
         }).join('');
     } catch (error) {
         console.error("Failed to load user skills", error);
+    }
+}
+
+async function removeSkill(skillId) {
+    if (!confirm("Are you sure you want to remove this verified skill from your profile?")) return;
+    
+    try {
+        await window.ApiClient.delete(`/users/me/skills/${skillId}`);
+        window.Toast.success("Skill removed from your profile.");
+        await loadMySkills();
+    } catch (error) {
+        window.Toast.error(error.message || "Failed to remove skill.", "Error");
     }
 }
 

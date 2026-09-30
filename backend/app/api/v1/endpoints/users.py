@@ -115,3 +115,20 @@ def add_update_skill(
         return {"message": "Skill added/updated successfully", "data": response.data}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.delete("/me/skills/{skill_id}")
+def remove_skill(
+    skill_id: UUID,
+    current_user: Any = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        response = supabase.table("candidate_skills")\
+            .delete()\
+            .eq("candidate_id", current_user.id)\
+            .eq("skill_id", str(skill_id))\
+            .execute()
+            
+        return {"message": "Skill removed successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
