@@ -25,6 +25,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Setup forms
     document.getElementById('postJobForm').addEventListener('submit', handlePostJob);
+
+    // Modal Accessibility
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeApplicantsModal();
+        }
+    });
+
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('applicantsModal');
+        if (e.target === modal) {
+            closeApplicantsModal();
+        }
+    });
 });
 
 async function loadRecruiterJobs() {

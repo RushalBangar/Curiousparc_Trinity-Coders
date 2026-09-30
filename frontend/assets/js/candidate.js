@@ -28,6 +28,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Setup forms
     document.getElementById('addSkillForm').addEventListener('submit', handleAddSkill);
+
+    // Modal Accessibility
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (typeof closeJobModal === 'function') closeJobModal();
+            if (typeof closeQuizModal === 'function') closeQuizModal();
+        }
+    });
+
+    window.addEventListener('click', (e) => {
+        const jobModal = document.getElementById('jobDetailModal');
+        const quizModal = document.getElementById('quizModal');
+        if (e.target === jobModal) closeJobModal();
+        if (e.target === quizModal) closeQuizModal();
+    });
 });
 
 async function loadJobFeed() {
