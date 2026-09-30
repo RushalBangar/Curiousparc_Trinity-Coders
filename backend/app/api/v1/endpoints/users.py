@@ -70,7 +70,7 @@ def get_my_skills(
             
         # Fetch candidate skills with the joined skill details
         response = supabase.table("candidate_skills")\
-            .select("skill_id, proficiency_level, years_experience, skills(id, name, category)")\
+            .select("skill_id, proficiency_level, years_experience, quiz_score, skills(id, name, category)")\
             .eq("candidate_id", current_user.id)\
             .execute()
             
