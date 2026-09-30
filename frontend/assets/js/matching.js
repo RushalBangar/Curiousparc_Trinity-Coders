@@ -93,11 +93,20 @@ class MatchingUI {
                     <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
                         These mandatory skills are missing from your profile. Tagging them will substantially raise your match score.
                     </p>
-                    <div class="skill-tags">
+                    <div class="skill-tags" style="display: flex; flex-wrap: wrap; gap: 0;">
                         ${gapAnalysis.critical_skill_gaps.map(s => `
-                            <span class="badge badge-red" style="padding: 0.4rem 0.85rem; font-size: 0.825rem;">
-                                ✗ ${s.skill.name}
-                            </span>
+                            <div style="display: inline-flex; align-items: stretch; border: 1px solid #fca5a5; border-radius: 9999px; overflow: hidden; background: #fef2f2; margin-right: 0.5rem; margin-bottom: 0.5rem;">
+                                <span style="padding: 0.4rem 0.75rem; font-size: 0.825rem; color: #991b1b; font-weight: 500;">
+                                    ✗ ${s.skill.name}
+                                </span>
+                                <a href="roadmap.html?skill=${encodeURIComponent(s.skill.name)}" target="_blank" style="padding: 0.4rem 0.75rem; font-size: 0.75rem; background: #fee2e2; color: #b91c1c; font-weight: 600; text-decoration: none; border-left: 1px solid #fca5a5; display: flex; align-items: center; gap: 0.25rem; transition: background 0.2s;" onmouseover="this.style.background='#fca5a5'; this.style.color='#7f1d1d'" onmouseout="this.style.background='#fee2e2'; this.style.color='#b91c1c'">
+                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                        <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z"/>
+                                    </svg>
+                                    Roadmap
+                                </a>
+                            </div>
                         `).join('')}
                     </div>
                 </div>
