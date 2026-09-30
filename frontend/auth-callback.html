@@ -49,10 +49,13 @@
                 // We need to fetch the profile to know where to redirect
                 try {
                     await window.Auth.fetchAndStoreProfile();
+                    localStorage.removeItem('pending_oauth_role'); // Clean up
                 } catch (e) {
                     // If profile doesn't exist yet, we initialize it
                     try {
-                        await window.ApiClient.post('/users/me/init-profile', { role: 'seeker' });
+                        const requestedRole = localStorage.getItem('pending_oauth_role') || 'seeker';
+                        await window.ApiClient.post('/users/me/init-profile', { role: requestedRole });
+                        localStorage.removeItem('pending_oauth_role'); // Clean up
                         await window.Auth.fetchAndStoreProfile();
                     } catch (err) {
                         window.Toast.error("Failed to initialize profile. " + err.message);

@@ -9,8 +9,11 @@ class Auth {
         return true;
     }
 
-    static async loginWithGoogle(redirectPath) {
+    static async loginWithGoogle(role = 'seeker') {
         try {
+            // Save the requested role in case this is a first-time signup
+            localStorage.setItem('pending_oauth_role', role);
+            
             const redirectUrl = window.location.origin + '/auth-callback.html';
             const endpoint = `/auth/google?redirect_url=${encodeURIComponent(redirectUrl)}`;
             const data = await window.ApiClient.get(endpoint);
