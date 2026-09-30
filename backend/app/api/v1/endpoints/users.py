@@ -81,6 +81,7 @@ def get_my_skills(
                 "skill_id": item["skill_id"],
                 "proficiency_level": item["proficiency_level"],
                 "years_experience": item["years_experience"],
+                "quiz_score": item.get("quiz_score"),
                 "skill": item["skills"]
             })
             
@@ -104,6 +105,9 @@ def add_update_skill(
             "proficiency_level": skill_data.proficiency_level,
             "years_experience": skill_data.years_experience
         }
+        
+        if skill_data.quiz_score is not None:
+            payload["quiz_score"] = skill_data.quiz_score
         
         # In Supabase, if we have a composite primary key, upsert will update if exists
         response = supabase.table("candidate_skills").upsert(payload).execute()

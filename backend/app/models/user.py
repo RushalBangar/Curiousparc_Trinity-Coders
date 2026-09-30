@@ -47,6 +47,7 @@ class CandidateSkillBase(BaseModel):
     skill_id: UUID
     proficiency_level: str = Field(..., pattern="^(beginner|intermediate|advanced|expert)$")
     years_experience: Optional[float] = None
+    quiz_score: Optional[float] = None
 
 class CandidateSkill(CandidateSkillBase):
     candidate_id: UUID

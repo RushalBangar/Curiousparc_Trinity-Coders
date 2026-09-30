@@ -211,6 +211,30 @@
         </div>
     </div>
 
+    <!-- Quiz Modal for Skill Verification -->
+    <div id="quizModal" class="modal-backdrop" style="display: none; z-index: 999;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size: 1.35rem; margin-bottom: 0.2rem;">Skill Verification Quiz</h3>
+                    <p id="quizSubtitle" style="font-size: 0.875rem; color: var(--text-muted);">Answer these questions to verify your competency</p>
+                </div>
+                <button type="button" class="btn-close" onclick="closeQuizModal()">✕</button>
+            </div>
+            
+            <div class="modal-body">
+                <div id="quizQuestionsContainer" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <!-- Questions loaded via JS -->
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeQuizModal()">Cancel</button>
+                <button type="button" id="submitQuizBtn" class="btn-primary" onclick="submitQuiz()">Submit Answers & Add Skill</button>
+            </div>
+        </div>
+    </div>
+
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/matching.js"></script>
@@ -232,6 +256,10 @@
 
         function closeJobModal() {
             document.getElementById('jobDetailModal').style.display = 'none';
+        }
+        
+        function closeQuizModal() {
+            document.getElementById('quizModal').style.display = 'none';
         }
     </script>
 </body>

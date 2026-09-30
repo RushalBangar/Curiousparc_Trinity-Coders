@@ -184,40 +184,102 @@ async function loadMySkills() {
             return;
         }
 
-        container.innerHTML = mySkills.map(ms => `
+        container.innerHTML = mySkills.map(ms => {
+            const scoreDisplay = ms.quiz_score !== null && ms.quiz_score !== undefined 
+                ? `<span style="color: var(--success); font-weight: 700; margin-left: 0.35rem;">✓ ${Math.round(ms.quiz_score)}%</span>`
+                : '';
+            
+            return `
             <span class="badge badge-neutral" style="padding: 0.5rem 0.95rem; font-size: 0.85rem; border: 1px solid var(--border-subtle);">
                 <strong>${ms.skill ? ms.skill.name : 'Skill'}</strong>
                 <span style="font-weight: 500; color: var(--text-muted); margin-left: 0.35rem;">
                     • ${ms.proficiency_level} (${ms.years_experience}y)
                 </span>
+                ${scoreDisplay}
             </span>
-        `).join('');
+            `;
+        }).join('');
     } catch (error) {
         console.error("Failed to load user skills", error);
     }
 }
 
+// Basic mock questions for the demo
+const mockQuestions = [
+    { q: "What is the primary purpose of version control?", options: ["Track changes", "Compile code", "Deploy servers", "Write documentation"], ans: 0 },
+    { q: "Which of the following is a NoSQL database?", options: ["PostgreSQL", "MySQL", "MongoDB", "Oracle"], ans: 2 },
+    { q: "What does API stand for?", options: ["Application Programming Interface", "Advanced Protocol Integration", "Automated Process Interaction", "Application Process Integration"], ans: 0 }
+];
+
+let pendingSkillPayload = null;
+
 async function handleAddSkill(e) {
     e.preventDefault();
-    const btn = document.getElementById('saveSkillBtn');
-    btn.disabled = true;
-
-    const payload = {
-        skill_id: document.getElementById('skillSelect').value,
+    
+    const skillSelect = document.getElementById('skillSelect');
+    const skillName = skillSelect.options[skillSelect.selectedIndex].text;
+    
+    pendingSkillPayload = {
+        skill_id: skillSelect.value,
         proficiency_level: document.getElementById('proficiency').value,
         years_experience: parseFloat(document.getElementById('yearsExp').value)
     };
 
+    // Render Quiz
+    document.getElementById('quizSubtitle').textContent = `Answer these questions to verify your competency in ${skillName}`;
+    const container = document.getElementById('quizQuestionsContainer');
+    
+    container.innerHTML = mockQuestions.map((mq, qIdx) => `
+        <div class="quiz-question-block" style="background: var(--bg-muted); padding: 1rem; border-radius: var(--radius-md);">
+            <p style="font-weight: 600; margin-bottom: 0.75rem; color: var(--text-primary);">${qIdx + 1}. ${mq.q}</p>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                ${mq.options.map((opt, oIdx) => `
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+                        <input type="radio" name="q${qIdx}" value="${oIdx}">
+                        ${opt}
+                    </label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('quizModal').style.display = 'flex';
+}
+
+async function submitQuiz() {
+    if (!pendingSkillPayload) return;
+    
+    const btn = document.getElementById('submitQuizBtn');
+    btn.innerHTML = 'Verifying...';
+    btn.disabled = true;
+    
+    // Calculate Score
+    let correct = 0;
+    mockQuestions.forEach((mq, qIdx) => {
+        const selected = document.querySelector(`input[name="q${qIdx}"]:checked`);
+        if (selected && parseInt(selected.value) === mq.ans) {
+            correct++;
+        }
+    });
+    
+    const scorePercentage = (correct / mockQuestions.length) * 100;
+    pendingSkillPayload.quiz_score = scorePercentage;
+    
     try {
-        await window.ApiClient.post('/users/me/skills', payload);
-        window.Toast.success('Skill added to candidate profile!', 'Competency Saved');
+        await window.ApiClient.post('/users/me/skills', pendingSkillPayload);
+        window.Toast.success(`Skill verified! You scored ${Math.round(scorePercentage)}% on the assessment.`, 'Competency Saved');
+        
+        document.getElementById('quizModal').style.display = 'none';
         await loadMySkills();
-        e.target.reset();
+        
+        document.getElementById('addSkillForm').reset();
         document.getElementById('yearsExp').value = "2";
     } catch (error) {
         window.Toast.error(error.message || "Failed to add skill.", "Error");
     } finally {
+        btn.innerHTML = 'Submit Answers & Add Skill';
         btn.disabled = false;
+        pendingSkillPayload = null;
     }
 }
 
