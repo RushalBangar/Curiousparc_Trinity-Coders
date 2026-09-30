@@ -1,31 +1,21 @@
 class Auth {
     static async login(email, password) {
-        try {
-            const data = await window.ApiClient.post('/auth/login', { email, password });
-            if (data.access_token) {
-                localStorage.setItem('access_token', data.access_token);
-                // Fetch user profile to know redirect path
-                await this.fetchAndStoreProfile();
-            }
-            return true;
-        } catch (error) {
-            alert("Login failed: " + error.message);
-            return false;
+        const data = await window.ApiClient.post('/auth/login', { email, password });
+        if (data.access_token) {
+            localStorage.setItem('access_token', data.access_token);
+            // Fetch user profile to know redirect path
+            await this.fetchAndStoreProfile();
         }
+        return true;
     }
 
     static async register(userData) {
-        try {
-            const data = await window.ApiClient.post('/auth/signup', userData);
-            if (data.session && data.session.access_token) {
-                localStorage.setItem('access_token', data.session.access_token);
-                await this.fetchAndStoreProfile();
-            }
-            return true;
-        } catch (error) {
-            alert("Registration failed: " + error.message);
-            return false;
+        const data = await window.ApiClient.post('/auth/signup', userData);
+        if (data.session && data.session.access_token) {
+            localStorage.setItem('access_token', data.session.access_token);
+            await this.fetchAndStoreProfile();
         }
+        return true;
     }
 
     static async fetchAndStoreProfile() {
