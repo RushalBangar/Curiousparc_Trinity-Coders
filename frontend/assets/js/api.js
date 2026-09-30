@@ -1,4 +1,8 @@
-const API_BASE_URL = "http://localhost:8000/api/v1";
+// Replace this with your actual Render backend URL once deployed
+const PROD_API_URL = "https://your-backend-url.onrender.com/api/v1";
+
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const API_BASE_URL = isLocal ? "http://localhost:8000/api/v1" : PROD_API_URL;
 
 class ApiClient {
     static async request(endpoint, options = {}) {
