@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadJobFeed();
     loadMySkills();
     loadAllSkillsToDropdown();
+    loadMyApplications();
 
     // Setup forms
     document.getElementById('addSkillForm').addEventListener('submit', handleAddSkill);
@@ -297,5 +298,45 @@ async function submitQuiz() {
 }
 
 async function loadMyApplications() {
-    // Optional application tracking helper
+    try {
+        const apps = await window.ApiClient.get('/users/me/applications');
+        const container = document.getElementById('applicationsContainer');
+        
+        if (!apps || apps.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h4>No Applications Yet</h4>
+                    <p>Explore recommended jobs in your feed and apply with your real-time compatibility score.</p>
+                    <button class="btn-secondary" onclick="showTab('jobs')">Browse Recommended Jobs</button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = apps.map(app => `
+            <div class="job-card">
+                <div class="job-card-header">
+                    <div>
+                        <h3 class="job-title">${app.jobs ? app.jobs.title : 'Job'}</h3>
+                        <div class="job-meta">
+                            <span>🏢 ${app.jobs ? app.jobs.company_name : ''}</span>
+                            <span>📍 ${app.jobs ? app.jobs.location : ''}</span>
+                        </div>
+                    </div>
+                    <span class="badge badge-neutral" style="text-transform: capitalize; font-size: 0.9rem;">${app.status || 'Applied'}</span>
+                </div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                        Applied on ${new Date(app.created_at).toLocaleDateString()}
+                    </div>
+                    <div class="badge badge-purple" style="font-weight: 600;">
+                        ${Math.round((app.match_score || 0) * 10) / 10}% Score Locked
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error("Failed to load applications", error);
+    }
 }

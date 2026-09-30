@@ -131,7 +131,13 @@ async function viewApplicants(jobId, jobTitleEncoded) {
                                 <div class="score-badge ${scoreClass}">
                                     ⚡ ${score}% Match
                                 </div>
-                                <span class="badge badge-neutral" style="text-transform: capitalize;">${app.status || 'Applied'}</span>
+                                <select onchange="updateApplicationStatus('${jobId}', '${app.candidate_id}', this.value, '${jobTitleEncoded}')" style="padding: 0.35rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem; color: var(--text-primary); cursor: pointer; text-transform: capitalize;">
+                                    <option value="applied" ${app.status === 'applied' ? 'selected' : ''}>Applied</option>
+                                    <option value="reviewing" ${app.status === 'reviewing' ? 'selected' : ''}>Reviewing</option>
+                                    <option value="shortlisted" ${app.status === 'shortlisted' ? 'selected' : ''}>Shortlisted</option>
+                                    <option value="interview" ${app.status === 'interview' ? 'selected' : ''}>Interview</option>
+                                    <option value="declined" ${app.status === 'declined' ? 'selected' : ''}>Declined</option>
+                                </select>
                             </div>
                         </div>
                     `;
@@ -141,6 +147,17 @@ async function viewApplicants(jobId, jobTitleEncoded) {
         modal.style.display = 'flex';
     } catch (error) {
         window.Toast.error(error.message || "Failed to load candidate pipeline.", "Error");
+    }
+}
+
+async function updateApplicationStatus(jobId, candidateId, newStatus, jobTitleEncoded) {
+    try {
+        await window.ApiClient.patch(`/jobs/${jobId}/applications/${candidateId}`, { status: newStatus });
+        window.Toast.success(`Candidate status updated to ${newStatus}.`, "Status Saved");
+        // Reload the modal to reflect potential UI styling changes (optional, but good for consistency)
+        viewApplicants(jobId, jobTitleEncoded);
+    } catch (error) {
+        window.Toast.error(error.message || "Failed to update status.", "Error");
     }
 }
 

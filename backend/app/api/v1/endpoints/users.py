@@ -133,3 +133,18 @@ def remove_skill(
         return {"message": "Skill removed successfully"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/me/applications")
+def get_my_applications(
+    current_user: Any = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        response = supabase.table("applications")\
+            .select("*, jobs(title, company_name, location)")\
+            .eq("candidate_id", current_user.id)\
+            .order("created_at", desc=True)\
+            .execute()
+        return response.data
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to fetch applications: {str(e)}")

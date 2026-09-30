@@ -164,3 +164,40 @@ def get_job_candidates(
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.patch("/{job_id}/applications/{candidate_id}")
+def update_application_status(
+    job_id: UUID,
+    candidate_id: UUID,
+    status_data: dict,
+    current_user: Any = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        # Ensure the current user is the owner (recruiter) of the job
+        job_check = supabase.table("jobs").select("recruiter_id").eq("id", str(job_id)).single().execute()
+        db_recruiter_id = job_check.data.get("recruiter_id")
+        
+        if str(db_recruiter_id).lower() != str(current_user.id).lower():
+            raise HTTPException(status_code=403, detail="Not authorized to update applications for this job")
+            
+        new_status = status_data.get("status")
+        if not new_status:
+            raise HTTPException(status_code=400, detail="Status is required")
+            
+        # Update the status
+        response = supabase.table("applications")\
+            .update({"status": new_status})\
+            .eq("job_id", str(job_id))\
+            .eq("candidate_id", str(candidate_id))\
+            .execute()
+            
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Application not found")
+            
+        return {"message": "Status updated successfully", "application": response.data[0]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
