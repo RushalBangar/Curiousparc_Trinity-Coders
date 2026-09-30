@@ -17,25 +17,45 @@
     overflow: hidden;
 }
 
-/* Subtle background accent glow */
-.auth-wrapper::before {
+/* Animated floating orbs */
+.auth-wrapper::before,
+.auth-wrapper::after {
     content: '';
     position: absolute;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(124, 58, 237, 0.05) 50%, transparent 70%);
-    top: -150px;
-    left: 50%;
-    transform: translateX(-50%);
     border-radius: 50%;
     pointer-events: none;
     z-index: 0;
+    filter: blur(80px);
+}
+
+.auth-wrapper::before {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    top: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: authOrbFloat 6s ease-in-out infinite alternate;
+}
+
+.auth-wrapper::after {
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%);
+    bottom: -80px;
+    right: -40px;
+    animation: authOrbFloat 8s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes authOrbFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(20px, -15px) scale(1.05); }
 }
 
 .auth-card {
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.12),
                 0 0 0 1px rgba(99, 102, 241, 0.06);
@@ -45,13 +65,13 @@
     max-width: 460px;
     position: relative;
     z-index: 1;
-    animation: authPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: authCardPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes authPop {
+@keyframes authCardPop {
     from {
         opacity: 0;
-        transform: translateY(16px) scale(0.97);
+        transform: translateY(20px) scale(0.96);
     }
     to {
         opacity: 1;
@@ -73,6 +93,11 @@
     font-weight: 800;
     color: var(--text-primary);
     text-decoration: none;
+    transition: transform var(--transition-fast);
+}
+
+.auth-brand:hover {
+    transform: scale(1.04);
 }
 
 .auth-header h2 {
@@ -88,7 +113,7 @@
     font-size: 0.925rem;
 }
 
-/* Role Selector Segment */
+/* Role Selector Segment (upgraded with smooth sliding indicator) */
 .role-segmented-control {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -103,27 +128,53 @@
 .role-segment-btn {
     border: none;
     background: transparent;
-    padding: 0.65rem 0.75rem;
+    padding: 0.7rem 0.75rem;
     border-radius: var(--radius-md);
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all var(--transition-normal);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
+    font-family: inherit;
 }
 
 .role-segment-btn:hover {
     color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .role-segment-btn.active {
     background: var(--bg-surface);
     color: var(--primary-600);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-sm), 0 0 0 1px rgba(99, 102, 241, 0.1);
+    transform: scale(1.02);
+}
+
+/* OR divider styling */
+.auth-divider {
+    text-align: center;
+    margin: 1.5rem 0;
+    position: relative;
+}
+
+.auth-divider hr {
+    border: 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.auth-divider span {
+    position: absolute;
+    top: -0.65rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
 }
 
 /* Auth Footer */
@@ -140,6 +191,7 @@
     color: var(--primary-600);
     font-weight: 600;
     text-decoration: none;
+    transition: color var(--transition-fast);
 }
 
 .auth-footer a:hover {
@@ -156,9 +208,24 @@
     font-size: 0.875rem;
     font-weight: 500;
     text-decoration: none;
-    transition: color var(--transition-fast);
+    transition: all var(--transition-fast);
+    z-index: 1;
+    position: relative;
 }
 
 .back-home-link:hover {
-    color: var(--text-primary);
+    color: var(--primary-600);
+    transform: translateX(-3px);
+}
+
+/* Responsive auth adjustments */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 2rem 1.5rem;
+        border-radius: var(--radius-lg);
+    }
+    
+    .auth-header h2 {
+        font-size: 1.5rem;
+    }
 }

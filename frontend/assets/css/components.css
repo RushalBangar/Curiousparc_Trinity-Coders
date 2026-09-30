@@ -20,18 +20,39 @@
     gap: 0.5rem;
     font-size: 0.95rem;
     font-weight: 600;
+    font-family: inherit;
     box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
     transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle shimmer sweep on hover */
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s ease;
+    pointer-events: none;
+}
+
+.btn-primary:hover::after {
+    left: 100%;
 }
 
 .btn-primary:hover {
     background: linear-gradient(135deg, #4338ca 0%, #6d28d9 50%, #1d4ed8 100%);
     box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 .btn-primary:active {
-    transform: scale(0.98);
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
 }
 
 .btn-primary:disabled {
@@ -41,12 +62,16 @@
     box-shadow: none;
 }
 
+.btn-primary:disabled::after {
+    display: none;
+}
+
 .btn-secondary {
     background: var(--bg-surface);
     color: var(--text-primary) !important;
     padding: 0.75rem 1.5rem;
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-subtle);
+    border: 1.5px solid var(--border-subtle);
     cursor: pointer;
     text-decoration: none;
     display: inline-flex;
@@ -55,20 +80,21 @@
     gap: 0.5rem;
     font-size: 0.95rem;
     font-weight: 600;
+    font-family: inherit;
     box-shadow: var(--shadow-xs);
     transition: all var(--transition-fast);
 }
 
 .btn-secondary:hover {
     background: var(--bg-muted);
-    border-color: var(--border-strong);
+    border-color: var(--primary-400);
     color: var(--primary-600) !important;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-secondary:active {
-    transform: scale(0.98);
+    transform: translateY(0) scale(0.98);
 }
 
 .btn-ghost {
@@ -79,6 +105,7 @@
     border-radius: var(--radius-sm);
     cursor: pointer;
     font-weight: 600;
+    font-family: inherit;
     transition: all var(--transition-fast);
 }
 
@@ -172,11 +199,13 @@ textarea:focus {
     font-size: 0.785rem;
     font-weight: 600;
     letter-spacing: 0.01em;
-    transition: transform var(--transition-fast);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
 }
 
 .badge:hover {
     transform: translateY(-1px);
+    filter: brightness(0.97);
 }
 
 .badge-green { 
@@ -210,7 +239,7 @@ textarea:focus {
 }
 
 /* --------------------------------------------------------------------------
-   Cards
+   Cards (upgraded with subtle shimmer & improved hover states)
    -------------------------------------------------------------------------- */
 .card {
     background: var(--bg-surface);
@@ -219,6 +248,7 @@ textarea:focus {
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-subtle);
     transition: all var(--transition-normal);
+    position: relative;
 }
 
 .card:hover {
@@ -231,9 +261,27 @@ textarea:focus {
 }
 
 .card-interactive:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
     box-shadow: var(--shadow-xl);
-    border-color: var(--primary-500);
+    border-color: var(--primary-400);
+}
+
+/* Top gradient accent on interactive cards */
+.card-interactive::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-gradient);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.card-interactive:hover::before {
+    opacity: 1;
 }
 
 .card-header {
@@ -244,7 +292,7 @@ textarea:focus {
 }
 
 /* --------------------------------------------------------------------------
-   Modals & Overlays
+   Modals & Overlays (upgraded with smoother transitions)
    -------------------------------------------------------------------------- */
 .modal-backdrop {
     position: fixed;
@@ -257,7 +305,12 @@ textarea:focus {
     justify-content: center;
     z-index: 1000;
     padding: 1.5rem;
-    animation: fadeIn 0.2s ease forwards;
+    animation: modalBgFade 0.25s ease forwards;
+}
+
+@keyframes modalBgFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modal-content {
@@ -268,15 +321,15 @@ textarea:focus {
     max-height: 88vh;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow-xl);
+    box-shadow: 0 25px 60px -10px rgba(15, 23, 42, 0.25);
     border: 1px solid var(--border-glass);
-    animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes modalPop {
     from {
         opacity: 0;
-        transform: scale(0.94) translateY(12px);
+        transform: scale(0.92) translateY(16px);
     }
     to {
         opacity: 1;
@@ -314,8 +367,8 @@ textarea:focus {
 }
 
 .btn-close {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     border: 1px solid var(--border-subtle);
     background: var(--bg-surface);
@@ -329,12 +382,14 @@ textarea:focus {
 }
 
 .btn-close:hover {
-    background: var(--bg-muted);
-    color: var(--text-primary);
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
+    color: var(--danger);
+    transform: rotate(90deg);
 }
 
 /* --------------------------------------------------------------------------
-   Progress Meters & Match Score Visuals
+   Progress Meters & Match Score Visuals (upgraded with animated ring)
    -------------------------------------------------------------------------- */
 .match-meter {
     display: flex;
@@ -348,19 +403,32 @@ textarea:focus {
 
 .match-dial {
     position: relative;
-    width: 64px;
-    height: 64px;
+    width: 68px;
+    height: 68px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     background: conic-gradient(var(--success) calc(var(--score, 0) * 1%), #e2e8f0 0);
     box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+    animation: dialSpin 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dialSpin {
+    from {
+        background: conic-gradient(var(--success) 0%, #e2e8f0 0);
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .match-dial-inner {
-    width: 50px;
-    height: 50px;
+    width: 52px;
+    height: 52px;
     background: var(--bg-surface);
     border-radius: 50%;
     display: flex;
@@ -369,4 +437,32 @@ textarea:focus {
     font-size: 0.85rem;
     font-weight: 800;
     color: var(--text-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive adjustments
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 100%;
+        max-height: 95vh;
+        border-radius: var(--radius-lg);
+        margin: 0.5rem;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .match-meter {
+        flex-direction: column;
+        text-align: center;
+    }
 }

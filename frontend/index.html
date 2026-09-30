@@ -11,7 +11,7 @@
     <style>
         /* Landing Page Specific Enhancements */
         .hero-section {
-            padding: 5rem 0 4rem;
+            padding: 6rem 0 5rem;
             position: relative;
             overflow: hidden;
         }
@@ -280,9 +280,12 @@
                 <img src="assets/images/logo.jpg" alt="SkillBridge Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
                 <span>Skill<span class="brand-gradient-text">Bridge</span></span>
             </a>
-            <nav class="main-nav">
-                <a href="#how-it-works">How It Works</a>
-                <a href="#features">Algorithm</a>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="this.classList.toggle('active'); document.getElementById('mainNav').classList.toggle('open');" aria-label="Toggle navigation menu">
+                <div class="hamburger-icon"><span></span><span></span><span></span></div>
+            </button>
+            <nav class="main-nav" id="mainNav">
+                <a href="#how-it-works" onclick="document.getElementById('mainNav').classList.remove('open'); document.getElementById('mobileMenuToggle').classList.remove('active');">How It Works</a>
+                <a href="#features" onclick="document.getElementById('mainNav').classList.remove('open'); document.getElementById('mobileMenuToggle').classList.remove('active');">Algorithm</a>
                 <a href="login.html">Sign In</a>
                 <a href="register.html" class="btn-primary btn-sm">Get Started</a>
             </nav>
@@ -292,7 +295,8 @@
     <main>
         <!-- Hero Section -->
         <section class="hero-section">
-            <div class="container" style="text-align: center;">
+            <div class="gradient-mesh-bg"></div>
+            <div class="container" style="text-align: center; position: relative; z-index: 2;">
                 <div class="hero-badge">
                     <span>✨</span> Dual-Tier Weighted Matching Engine
                 </div>
@@ -363,9 +367,9 @@
         </section>
 
         <!-- Social Proof Metrics -->
-        <section class="metrics-section">
+        <section class="metrics-section reveal">
             <div class="container">
-                <div class="metrics-grid">
+                <div class="metrics-grid stagger-children">
                     <div>
                         <div class="metric-value">94.2%</div>
                         <div class="metric-label">Match Precision Accuracy</div>
@@ -386,16 +390,45 @@
             </div>
         </section>
 
+        <!-- How It Works Section -->
+        <section id="how-it-works" style="padding: 5rem 0; background: var(--bg-base);">
+            <div class="container">
+                <div class="section-heading-center reveal">
+                    <span class="badge badge-blue" style="margin-bottom: 0.5rem;">How It Works</span>
+                    <h2>Three Steps to Smarter Hiring</h2>
+                    <p>SkillBridge replaces resume guesswork with transparent, mathematical skill evaluation.</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;" class="stagger-children reveal">
+                    <div class="feature-card" style="text-align: center; padding: 2.5rem 2rem;">
+                        <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary-gradient); color: white; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 6px 18px rgba(79, 70, 229, 0.3);">1</div>
+                        <h3 style="margin-bottom: 0.65rem;">Tag Your Skills</h3>
+                        <p>Candidates select technical competencies from a standardized taxonomy and set proficiency levels (Beginner → Expert).</p>
+                    </div>
+                    <div class="feature-card" style="text-align: center; padding: 2.5rem 2rem;">
+                        <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); color: white; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);">2</div>
+                        <h3 style="margin-bottom: 0.65rem;">Algorithm Scores You</h3>
+                        <p>Our weighted dual-tier engine evaluates your skills against each job's mandatory (75%) and preferred (25%) requirements.</p>
+                    </div>
+                    <div class="feature-card" style="text-align: center; padding: 2.5rem 2rem;">
+                        <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3);">3</div>
+                        <h3 style="margin-bottom: 0.65rem;">Bridge the Gaps</h3>
+                        <p>Missing a required skill? SkillBridge surfaces curated learning roadmaps so you can upskill and re-apply stronger.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Features Section -->
         <section class="features-section" id="features">
             <div class="container">
-                <div class="section-heading-center">
+                <div class="section-heading-center reveal">
                     <span class="badge badge-purple" style="margin-bottom: 0.5rem;">Why SkillBridge</span>
                     <h2>Engineered for Technical Truth</h2>
                     <p>Static PDF resumes reward formatting tricks. SkillBridge solves tech hiring with mathematical transparency.</p>
                 </div>
 
-                <div class="features-grid">
+                <div class="features-grid stagger-children reveal">
                     <div class="feature-card">
                         <div class="feature-icon-box">⚖️</div>
                         <h3 style="margin-bottom: 0.65rem;">Weighted Dual-Tier Algorithm</h3>
@@ -418,11 +451,11 @@
         </section>
 
         <!-- Call to Action Banner -->
-        <div class="container">
-            <div class="cta-banner">
-                <h2>Ready for Smarter Tech Hiring?</h2>
-                <p>Join candidates getting matched to jobs they actually qualify for, and companies hiring engineers based on proof.</p>
-                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        <div class="container reveal">
+            <div class="cta-banner noise-overlay" style="position: relative;">
+                <h2 style="position: relative; z-index: 2;">Ready for Smarter Tech Hiring?</h2>
+                <p style="position: relative; z-index: 2;">Join candidates getting matched to jobs they actually qualify for, and companies hiring engineers based on proof.</p>
+                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; position: relative; z-index: 2;">
                     <a href="register.html?role=seeker" class="btn-secondary btn-lg" style="background: white; color: var(--primary-600) !important;">Create Candidate Profile</a>
                     <a href="register.html?role=recruiter" class="btn-ghost btn-lg" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);">Post a Job Posting</a>
                 </div>
@@ -524,6 +557,22 @@
             const gapContainer = document.getElementById('demoGapTags');
             gapContainer.innerHTML = gapList.map(s => `<span class="badge badge-red">✗ ${s} (Missing Required)</span>`).join('') || '<span class="badge badge-green">Zero critical gaps!</span>';
         }
+    </script>
+
+    <!-- Scroll-Reveal Observer -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealElements = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+            revealElements.forEach(el => observer.observe(el));
+        });
     </script>
 </body>
 </html>
