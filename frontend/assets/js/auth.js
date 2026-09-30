@@ -72,9 +72,12 @@ class Auth {
             return;
         }
         
-        const profile = this.getProfile();
-        if (profile && allowedRoles.length > 0 && !allowedRoles.includes(profile.role)) {
-            window.location.href = 'index.html'; // Or forbidden page
+        if (allowedRoles.length > 0) {
+            const profile = this.getProfile();
+            if (!profile || !allowedRoles.includes(profile.role)) {
+                window.location.href = 'index.html'; // Or forbidden page
+                return;
+            }
         }
     }
 }
