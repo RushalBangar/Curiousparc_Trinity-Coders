@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from supabase import Client
 from typing import List, Any, Dict
 from app.core.database import get_supabase_client
@@ -17,6 +18,44 @@ def get_my_profile(
         return response.data
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Profile not found: {str(e)}")
+
+class ProfileInit(BaseModel):
+    role: str = "seeker"
+
+@router.post("/me/init-profile", response_model=Profile)
+def init_my_profile(
+    profile_data: ProfileInit,
+    current_user: Any = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    try:
+        # Check if profile already exists
+        try:
+            existing = supabase.table("profiles").select("*").eq("id", current_user.id).single().execute()
+            if existing.data:
+                return existing.data
+        except Exception:
+            pass # Doesn't exist, proceed to create
+            
+        # Get user metadata (from Google)
+        email = current_user.email
+        full_name = "OAuth User"
+        if hasattr(current_user, 'user_metadata') and current_user.user_metadata:
+            full_name = current_user.user_metadata.get('full_name', 'OAuth User')
+            
+        new_profile = {
+            "id": current_user.id,
+            "email": email,
+            "full_name": full_name,
+            "role": profile_data.role
+        }
+        
+        response = supabase.table("profiles").insert(new_profile).execute()
+        if response.data:
+            return response.data[0]
+        raise Exception("Failed to insert profile")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to init profile: {str(e)}")
 
 @router.get("/me/skills", response_model=List[CandidateSkillDetail])
 def get_my_skills(

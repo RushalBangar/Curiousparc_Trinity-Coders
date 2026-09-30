@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authenticating — SkillBridge</title>
+    <link rel="icon" type="image/jpeg" href="favicon.jpg">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--bg-surface); }
+        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: var(--primary-600); animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div style="text-align: center;">
+        <div class="spinner"></div>
+        <h2 style="color: var(--text-primary); font-size: 1.25rem;">Verifying Google Login...</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Please wait while we log you in safely.</p>
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Supabase returns tokens in the hash fragment: #access_token=xyz&refresh_token=abc
+            const hash = window.location.hash.substring(1);
+            if (!hash) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const params = new URLSearchParams(hash);
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+
+            if (accessToken) {
+                localStorage.setItem('access_token', accessToken);
+                // We need to fetch the profile to know where to redirect
+                try {
+                    await window.Auth.fetchAndStoreProfile();
+                } catch (e) {
+                    // If profile doesn't exist yet, we initialize it
+                    try {
+                        await window.ApiClient.post('/users/me/init-profile', { role: 'seeker' });
+                        await window.Auth.fetchAndStoreProfile();
+                    } catch (err) {
+                        window.Toast.error("Failed to initialize profile. " + err.message);
+                        setTimeout(() => window.location.href = 'index.html', 2500);
+                    }
+                }
+            } else {
+                window.Toast.error("Authentication failed. No token received.");
+                setTimeout(() => window.location.href = 'login.html', 2000);
+            }
+        });
+    </script>
+</body>
+</html>

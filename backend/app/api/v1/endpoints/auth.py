@@ -68,3 +68,21 @@ def login(credentials: UserLogin, supabase: Client = Depends(get_supabase_client
         }
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Login failed: {str(e)}")
+
+@router.get("/google")
+def login_google(redirect_url: str = None, supabase: Client = Depends(get_supabase_client)):
+    try:
+        # Default to frontend production URL if no redirect_url is provided
+        frontend_url = redirect_url or "https://curiousparc-trinity-coders.onrender.com/auth-callback.html"
+        
+        res = supabase.auth.sign_in_with_oauth({
+            "provider": "google",
+            "options": {
+                "redirect_to": frontend_url
+            }
+        })
+        
+        # supabase.auth.sign_in_with_oauth returns an object with a .url property
+        return {"url": res.url}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Google OAuth failed: {str(e)}")

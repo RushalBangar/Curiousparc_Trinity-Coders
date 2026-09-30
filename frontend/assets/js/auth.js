@@ -9,6 +9,19 @@ class Auth {
         return true;
     }
 
+    static async loginWithGoogle(redirectPath) {
+        try {
+            const redirectUrl = window.location.origin + '/auth-callback.html';
+            const endpoint = `/auth/google?redirect_url=${encodeURIComponent(redirectUrl)}`;
+            const data = await window.ApiClient.get(endpoint);
+            if (data.url) {
+                window.location.href = data.url;
+            }
+        } catch (error) {
+            window.Toast.error("Google Login failed: " + error.message, "OAuth Error");
+        }
+    }
+
     static async register(userData) {
         const data = await window.ApiClient.post('/auth/signup', userData);
         if (data.session && data.session.access_token) {
