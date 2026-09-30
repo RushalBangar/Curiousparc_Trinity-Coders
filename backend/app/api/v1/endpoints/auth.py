@@ -70,19 +70,20 @@ def login(credentials: UserLogin, supabase: Client = Depends(get_supabase_client
         raise HTTPException(status_code=401, detail=f"Login failed: {str(e)}")
 
 @router.get("/google")
-def login_google(redirect_url: str = None, supabase: Client = Depends(get_supabase_client)):
+def login_google(redirect_url: str = None):
     try:
+        import urllib.parse
+        from app.core.database import settings
+        
         # Default to frontend production URL if no redirect_url is provided
         frontend_url = redirect_url or "https://curiousparc-trinity-coders.onrender.com/auth-callback.html"
         
-        res = supabase.auth.sign_in_with_oauth({
-            "provider": "google",
-            "options": {
-                "redirect_to": frontend_url
-            }
-        })
+        # Manually construct the URL for Implicit Flow. 
+        # We avoid supabase-py here because it forces PKCE, which requires a stateful client 
+        # and returns a ?code= instead of #access_token=, breaking our stateless frontend architecture.
+        encoded_redirect = urllib.parse.quote(frontend_url)
+        oauth_url = f"{settings.supabase_url}/auth/v1/authorize?provider=google&redirect_to={encoded_redirect}"
         
-        # supabase.auth.sign_in_with_oauth returns an object with a .url property
-        return {"url": res.url}
+        return {"url": oauth_url}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Google OAuth failed: {str(e)}")
