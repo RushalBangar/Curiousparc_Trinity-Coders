@@ -17,8 +17,8 @@ def calculate_match_and_gap_analysis(
     job_requirements: list of dicts with 'skill_id', 'is_required', 'weight', and nested 'skills' (id, name, category).
     """
     
-    # Extract candidate skill IDs for O(1) lookup
-    candidate_skill_ids = {str(cs["skill_id"]) for cs in candidate_skills}
+    # Extract candidate skills into a dictionary for O(1) lookup and attribute access
+    candidate_skills_dict = {str(cs["skill_id"]): cs for cs in candidate_skills}
     
     matched_skills = []
     critical_skill_gaps = []
@@ -31,6 +31,14 @@ def calculate_match_and_gap_analysis(
     matched_pref_weights = 0.0
     
     has_preferred = False
+    
+    # Proficiency multipliers if quiz_score is missing
+    prof_multiplier = {
+        "beginner": 0.25,
+        "intermediate": 0.50,
+        "advanced": 0.75,
+        "expert": 1.00
+    }
     
     for req in job_requirements:
         skill_id = str(req["skill_id"])
@@ -47,16 +55,33 @@ def calculate_match_and_gap_analysis(
         
         if is_required:
             total_req_weights += weight
-            if skill_id in candidate_skill_ids:
-                matched_req_weights += weight
+            if skill_id in candidate_skills_dict:
+                cand_skill = candidate_skills_dict[skill_id]
+                
+                # Determine multiplier (quiz score takes precedence, fallback to proficiency)
+                multiplier = 0.5 # default
+                if cand_skill.get("quiz_score") is not None:
+                    multiplier = float(cand_skill["quiz_score"]) / 100.0
+                elif cand_skill.get("proficiency_level"):
+                    multiplier = prof_multiplier.get(cand_skill["proficiency_level"].lower(), 0.5)
+                    
+                matched_req_weights += (weight * multiplier)
                 matched_skills.append(skill_detail)
             else:
                 critical_skill_gaps.append(skill_detail)
         else:
             has_preferred = True
             total_pref_weights += weight
-            if skill_id in candidate_skill_ids:
-                matched_pref_weights += weight
+            if skill_id in candidate_skills_dict:
+                cand_skill = candidate_skills_dict[skill_id]
+                
+                multiplier = 0.5 # default
+                if cand_skill.get("quiz_score") is not None:
+                    multiplier = float(cand_skill["quiz_score"]) / 100.0
+                elif cand_skill.get("proficiency_level"):
+                    multiplier = prof_multiplier.get(cand_skill["proficiency_level"].lower(), 0.5)
+                    
+                matched_pref_weights += (weight * multiplier)
                 bonus_competencies.append(skill_detail)
                 
     # Algorithmic Formulation
