@@ -45,12 +45,15 @@
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #4338ca 0%, #6d28d9 50%, #1d4ed8 100%);
+    background: linear-gradient(135deg, #4338ca 0%, #6d28d9 50%, #1d4ed8 100%) !important;
+    color: var(--text-inverse) !important;
     box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
     transform: translateY(-2px);
 }
 
 .btn-primary:active {
+    background: linear-gradient(135deg, #3730a3 0%, #5b21b6 50%, #1e40af 100%) !important;
+    color: var(--text-inverse) !important;
     transform: translateY(0) scale(0.98);
     box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
 }

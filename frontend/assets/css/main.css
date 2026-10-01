@@ -200,7 +200,7 @@ nav.main-nav {
     gap: 0.5rem;
 }
 
-nav.main-nav a {
+nav.main-nav a:not([class*="btn"]) {
     font-size: 0.925rem;
     font-weight: 600;
     color: var(--text-secondary);
@@ -210,7 +210,7 @@ nav.main-nav a {
     position: relative;
 }
 
-nav.main-nav a:hover {
+nav.main-nav a:not([class*="btn"]):hover {
     color: var(--primary-600);
     background: var(--bg-muted);
 }
@@ -283,12 +283,20 @@ nav.main-nav a:hover {
         transform: translateX(0);
     }
     
-    nav.main-nav a {
+    nav.main-nav a:not([class*="btn"]) {
         width: 100%;
         text-align: center;
         padding: 1rem;
         font-size: 1.05rem;
         border-radius: var(--radius-md);
+    }
+    
+    nav.main-nav a[class*="btn"],
+    nav.main-nav button[class*="btn"] {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        margin-top: 0.5rem;
     }
 }
 
