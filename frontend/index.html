@@ -306,14 +306,14 @@
                 <img src="assets/images/logo.jpg" alt="SkillBridge Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
                 <span>Skill<span class="brand-gradient-text">Bridge</span></span>
             </a>
-            <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="this.classList.toggle('active'); document.getElementById('mainNav').classList.toggle('open');" aria-label="Toggle navigation menu">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mainNav">
                 <div class="hamburger-icon"><span></span><span></span><span></span></div>
             </button>
             <nav class="main-nav" id="mainNav">
-                <a href="#how-it-works" onclick="document.getElementById('mainNav').classList.remove('open'); document.getElementById('mobileMenuToggle').classList.remove('active');">How It Works</a>
-                <a href="#features" onclick="document.getElementById('mainNav').classList.remove('open'); document.getElementById('mobileMenuToggle').classList.remove('active');">Algorithm</a>
-                <a href="login.html">Sign In</a>
-                <a href="register.html" class="btn-primary btn-sm">Get Started</a>
+                <a href="#how-it-works" onclick="closeMobileMenu()">How It Works</a>
+                <a href="#features" onclick="closeMobileMenu()">Algorithm</a>
+                <a href="login.html" onclick="closeMobileMenu()">Sign In</a>
+                <a href="register.html" class="btn-primary btn-sm" onclick="closeMobileMenu()">Get Started</a>
             </nav>
         </div>
     </header>
@@ -598,6 +598,31 @@
                 });
             }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
             revealElements.forEach(el => observer.observe(el));
+        });
+
+        // Mobile Drawer Controller
+        function toggleMobileMenu() {
+            const nav = document.getElementById('mainNav');
+            const toggle = document.getElementById('mobileMenuToggle');
+            const isOpen = nav.classList.toggle('open');
+            toggle.classList.toggle('active', isOpen);
+            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            document.body.classList.toggle('menu-open', isOpen);
+        }
+
+        function closeMobileMenu() {
+            const nav = document.getElementById('mainNav');
+            const toggle = document.getElementById('mobileMenuToggle');
+            if (nav) nav.classList.remove('open');
+            if (toggle) {
+                toggle.classList.remove('active');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            document.body.classList.remove('menu-open');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeMobileMenu();
         });
     </script>
 </body>
