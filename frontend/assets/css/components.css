@@ -469,3 +469,292 @@ textarea:focus {
         text-align: center;
     }
 }
+
+/* ==========================================================================
+   AI Live Proctoring & Advanced Assessment System
+   ========================================================================== */
+.proctor-modal-dialog {
+    max-width: 900px;
+    width: 95%;
+    max-height: 94vh;
+}
+
+.proctor-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem 1.75rem;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.proctor-cam-card {
+    position: relative;
+    width: 140px;
+    height: 105px;
+    background: #0f172a;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 2px solid var(--primary-500);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    flex-shrink: 0;
+}
+
+.proctor-video-stream {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* Mirror view for natural feel */
+}
+
+.proctor-canvas-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transform: scaleX(-1);
+}
+
+.proctor-cam-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: rgba(15, 23, 42, 0.85);
+    color: #10b981;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+.proctor-rec-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: recPulse 1s infinite alternate;
+}
+
+@keyframes recPulse {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0.2; transform: scale(0.8); }
+}
+
+.quiz-secure-container {
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    padding: 1.5rem 2rem;
+    overflow: hidden;
+}
+
+/* Diagonal security watermark against optical Google Lens scanning */
+.quiz-watermark-pattern {
+    position: absolute;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.035;
+    transform: rotate(-25deg);
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 60px,
+        rgba(15, 23, 42, 0.2) 60px,
+        rgba(15, 23, 42, 0.2) 61px
+    );
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: 0.2em;
+    line-height: 4rem;
+}
+
+.quiz-content-layer {
+    position: relative;
+    z-index: 1;
+}
+
+.quiz-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.quiz-timer-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.85rem;
+    background: var(--bg-muted);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--primary-600);
+}
+
+.quiz-timer-pill.urgent {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #ef4444;
+    animation: urgentPulse 1s infinite alternate;
+}
+
+@keyframes urgentPulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.03); }
+}
+
+.quiz-progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-muted);
+    border-radius: var(--radius-full);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.quiz-progress-fill {
+    height: 100%;
+    background: var(--primary-gradient);
+    transition: width 0.3s ease;
+}
+
+.quiz-question-box {
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.quiz-question-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.45;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+}
+
+.quiz-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.quiz-option-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.95rem 1.15rem;
+    background: var(--bg-muted);
+    border: 1.5px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.quiz-option-card:hover {
+    background: #ffffff;
+    border-color: var(--primary-400);
+    transform: translateX(4px);
+    box-shadow: var(--shadow-xs);
+}
+
+.quiz-option-card.selected {
+    background: #eef2ff;
+    border-color: var(--primary-600);
+    color: var(--primary-700);
+    font-weight: 600;
+    box-shadow: 0 0 0 1px var(--primary-600);
+}
+
+.quiz-option-radio {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-600);
+    flex-shrink: 0;
+}
+
+.quiz-palette {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 1.25rem 0;
+}
+
+.quiz-palette-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.quiz-palette-btn.active {
+    border-color: var(--primary-600);
+    color: var(--primary-600);
+    transform: scale(1.1);
+    box-shadow: 0 0 8px rgba(79, 70, 229, 0.3);
+}
+
+.quiz-palette-btn.answered {
+    background: var(--primary-600);
+    border-color: var(--primary-600);
+    color: #ffffff;
+}
+
+/* Violation Screen */
+.violation-banner {
+    background: #fef2f2;
+    border: 2px solid #ef4444;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    text-align: center;
+    color: #991b1b;
+    margin-bottom: 1.5rem;
+    animation: flashBorder 0.8s infinite alternate;
+}
+
+@keyframes flashBorder {
+    from { border-color: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+    to { border-color: #b91c1c; box-shadow: 0 0 24px rgba(239, 68, 68, 0.6); }
+}
+
+.violation-banner h3 {
+    color: #ef4444;
+    font-size: 1.35rem;
+    margin-bottom: 0.5rem;
+}
+

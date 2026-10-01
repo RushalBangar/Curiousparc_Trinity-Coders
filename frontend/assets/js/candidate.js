@@ -201,13 +201,14 @@ async function loadMySkills() {
         }
 
         container.innerHTML = mySkills.map(ms => {
+            const skillName = ms.skill ? ms.skill.name : 'Skill';
             const scoreDisplay = ms.quiz_score !== null && ms.quiz_score !== undefined 
-                ? `<span style="color: var(--success); font-weight: 700; margin-left: 0.35rem;">✓ ${Math.round(ms.quiz_score)}%</span>`
-                : '';
+                ? `<span style="color: var(--success); font-weight: 700; margin-left: 0.35rem;" title="Verified Assessment Score">✓ ${Math.round(ms.quiz_score)}%</span>`
+                : `<button type="button" class="btn-ghost" style="padding: 0.15rem 0.45rem; font-size: 0.75rem; margin-left: 0.4rem; border: 1px solid var(--primary-400); color: var(--primary-600); border-radius: var(--radius-sm);" onclick="startDirectSkillQuiz('${ms.skill_id}', '${skillName}', '${ms.proficiency_level}', ${ms.years_experience})">Verify</button>`;
             
             return `
-            <span class="badge badge-neutral" style="padding: 0.5rem 0.95rem; font-size: 0.85rem; border: 1px solid var(--border-subtle);">
-                <strong>${ms.skill ? ms.skill.name : 'Skill'}</strong>
+            <span class="badge badge-neutral" style="padding: 0.5rem 0.95rem; font-size: 0.85rem; border: 1px solid var(--border-subtle); display: inline-flex; align-items: center;">
+                <strong>${skillName}</strong>
                 <span style="font-weight: 500; color: var(--text-muted); margin-left: 0.35rem;">
                     • ${ms.proficiency_level} (${ms.years_experience}y)
                 </span>
@@ -233,15 +234,36 @@ async function removeSkill(skillId) {
     }
 }
 
-// Basic mock questions for the demo
-const mockQuestions = [
-    { q: "What is the primary purpose of version control?", options: ["Track changes", "Compile code", "Deploy servers", "Write documentation"], ans: 0 },
-    { q: "Which of the following is a NoSQL database?", options: ["PostgreSQL", "MySQL", "MongoDB", "Oracle"], ans: 2 },
-    { q: "What does API stand for?", options: ["Application Programming Interface", "Advanced Protocol Integration", "Automated Process Interaction", "Application Process Integration"], ans: 0 }
-];
-
+// ==========================================================================
+// Advanced AI Proctored Assessment Engine
+// ==========================================================================
 let pendingSkillPayload = null;
 
+let currentQuiz = {
+    skillName: '',
+    questions: [],
+    currentIndex: 0,
+    answers: {},
+    timer: null,
+    timeRemaining: 600, // 10 minutes for 10 questions
+    isSubmitted: false
+};
+
+/**
+ * Initiates assessment directly from an existing profile skill tag
+ */
+function startDirectSkillQuiz(skillId, skillName, proficiencyLevel, yearsExp) {
+    pendingSkillPayload = {
+        skill_id: skillId,
+        proficiency_level: proficiencyLevel,
+        years_experience: parseFloat(yearsExp)
+    };
+    prepareQuizPreCheck(skillName);
+}
+
+/**
+ * Handles "Add to Profile" submission from the form
+ */
 async function handleAddSkill(e) {
     e.preventDefault();
     
@@ -254,62 +276,365 @@ async function handleAddSkill(e) {
         years_experience: parseFloat(document.getElementById('yearsExp').value)
     };
 
-    // Render Quiz
-    document.getElementById('quizSubtitle').textContent = `Answer these questions to verify your competency in ${skillName}`;
-    const container = document.getElementById('quizQuestionsContainer');
-    
-    container.innerHTML = mockQuestions.map((mq, qIdx) => `
-        <div class="quiz-question-block" style="background: var(--bg-muted); padding: 1rem; border-radius: var(--radius-md);">
-            <p style="font-weight: 600; margin-bottom: 0.75rem; color: var(--text-primary);">${qIdx + 1}. ${mq.q}</p>
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                ${mq.options.map((opt, oIdx) => `
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem;">
-                        <input type="radio" name="q${qIdx}" value="${oIdx}">
-                        ${opt}
-                    </label>
-                `).join('')}
-            </div>
-        </div>
-    `).join('');
-    
+    prepareQuizPreCheck(skillName);
+}
+
+/**
+ * Sets up Pre-Check screen and preloads AI proctoring model in background
+ */
+function prepareQuizPreCheck(skillName) {
+    currentQuiz.skillName = skillName;
+
+    // Reset views
+    document.getElementById('quizPreCheckView').style.display = 'block';
+    document.getElementById('quizActiveView').style.display = 'none';
+    document.getElementById('quizResultsView').style.display = 'none';
+    document.getElementById('quizViolationBanner').style.display = 'none';
+
+    document.getElementById('preCheckSkillBadge').textContent = `${skillName} Assessment`;
+    document.getElementById('proctorConsentCheck').checked = false;
+    document.getElementById('preCheckStatus').textContent = "Camera permission & identity verification required before questions are unlocked.";
+    document.getElementById('startProctorQuizBtn').disabled = false;
+    document.getElementById('startProctorQuizBtn').innerHTML = "<span>🎥 Enable Camera & Start Assessment</span>";
+
+    // Asynchronously begin preloading detection model so it is warm
+    if (window.QuizProctor && window.QuizProctor.loadDetectionModel) {
+        window.QuizProctor.loadDetectionModel().catch(e => console.warn("Model pre-load note:", e));
+    }
+
     document.getElementById('quizModal').style.display = 'flex';
 }
 
-async function submitQuiz() {
-    if (!pendingSkillPayload) return;
+/**
+ * Starts camera, verifies identity, locks tab, and renders Question 1
+ */
+async function initiateProctoredExam() {
+    const consent = document.getElementById('proctorConsentCheck');
+    if (!consent || !consent.checked) {
+        alert("Please check the agreement box acknowledging the proctoring security rules and camera requirement.");
+        return;
+    }
+
+    const startBtn = document.getElementById('startProctorQuizBtn');
+    startBtn.disabled = true;
+    startBtn.innerHTML = "<span>⏳ Connecting Camera & Arming AI Shield...</span>";
+
+    try {
+        const videoEl = document.getElementById('proctorVideo');
+        const canvasEl = document.getElementById('proctorCanvas');
+        const userEmail = (window.Auth && window.Auth.currentUser && window.Auth.currentUser.email) || "candidate@skillbridge.io";
+
+        // Start live camera and anti-cheat proctoring
+        await window.QuizProctor.startSession({
+            videoElement: videoEl,
+            canvasElement: canvasEl,
+            candidateEmail: userEmail,
+            onViolation: handleProctorViolation,
+            onStatusUpdate: (msg, level) => {
+                const badge = document.getElementById('proctorShieldStatus');
+                if (badge) {
+                    badge.textContent = `AI Shield: ${msg}`;
+                    badge.className = `badge badge-${level === 'danger' ? 'red' : level === 'warning' ? 'yellow' : 'green'}`;
+                }
+            }
+        });
+
+        // Fetch 10 randomized technical questions for this skill
+        const questions = window.QuizBank.getSkillQuizQuestions(currentQuiz.skillName, 10);
+        currentQuiz.questions = questions;
+        currentQuiz.currentIndex = 0;
+        currentQuiz.answers = {};
+        currentQuiz.timeRemaining = 600; // 10 minutes
+        currentQuiz.isSubmitted = false;
+
+        // Configure anti-lens dynamic watermark
+        const wmText = `SKILLBRIDGE SECURE PROCTOR • ${userEmail.toUpperCase()} • DO NOT PHOTOGRAPH • `;
+        document.getElementById('quizWatermarkText').textContent = wmText;
+        document.getElementById('quizActiveSkillBadge').textContent = currentQuiz.skillName;
+
+        // Switch to active exam view
+        document.getElementById('quizPreCheckView').style.display = 'none';
+        document.getElementById('quizActiveView').style.display = 'block';
+
+        // Render Question 1 and question palette
+        renderCurrentQuestion();
+        renderQuizPalette();
+        startQuizTimer();
+
+    } catch (error) {
+        console.error("Failed to start proctored assessment:", error);
+        alert(error.message || "Failed to start camera or initialize proctoring. Please ensure camera permissions are allowed.");
+        startBtn.disabled = false;
+        startBtn.innerHTML = "<span>🎥 Enable Camera & Start Assessment</span>";
+    }
+}
+
+/**
+ * Renders the currently selected question
+ */
+function renderCurrentQuestion() {
+    const q = currentQuiz.questions[currentQuiz.currentIndex];
+    if (!q) return;
+
+    // Counter & Progress
+    const total = currentQuiz.questions.length;
+    document.getElementById('questionCounterTitle').textContent = `Question ${currentQuiz.currentIndex + 1} of ${total}`;
+    const percent = ((currentQuiz.currentIndex + 1) / total) * 100;
+    document.getElementById('quizProgressFill').style.width = `${percent}%`;
+
+    // Question Text
+    document.getElementById('currentQuestionText').textContent = `${currentQuiz.currentIndex + 1}. ${q.q}`;
+
+    // Options List
+    const optionsContainer = document.getElementById('currentOptionsList');
+    const selectedAns = currentQuiz.answers[currentQuiz.currentIndex];
+
+    optionsContainer.innerHTML = q.options.map((opt, oIdx) => {
+        const isChecked = selectedAns === oIdx;
+        return `
+            <div class="quiz-option-card ${isChecked ? 'selected' : ''}" onclick="selectOption(${oIdx})">
+                <input type="radio" name="activeQuizOption" value="${oIdx}" class="quiz-option-radio" ${isChecked ? 'checked' : ''} onchange="selectOption(${oIdx})">
+                <span style="line-height: 1.4;">${opt}</span>
+            </div>
+        `;
+    }).join('');
+
+    // Previous / Next Buttons
+    const prevBtn = document.getElementById('prevQuestionBtn');
+    const nextBtn = document.getElementById('nextQuestionBtn');
+    prevBtn.disabled = currentQuiz.currentIndex === 0;
     
-    const btn = document.getElementById('submitQuizBtn');
-    btn.innerHTML = 'Verifying...';
-    btn.disabled = true;
-    
-    // Calculate Score
-    let correct = 0;
-    mockQuestions.forEach((mq, qIdx) => {
-        const selected = document.querySelector(`input[name="q${qIdx}"]:checked`);
-        if (selected && parseInt(selected.value) === mq.ans) {
-            correct++;
+    if (currentQuiz.currentIndex === total - 1) {
+        nextBtn.textContent = "Review & Submit";
+        nextBtn.onclick = confirmAndSubmitQuiz;
+    } else {
+        nextBtn.textContent = "Next →";
+        nextBtn.onclick = () => navQuestion(1);
+    }
+
+    // Update Palette active state
+    updatePaletteActiveState();
+}
+
+/**
+ * Renders the 10 question selector buttons (1..10)
+ */
+function renderQuizPalette() {
+    const container = document.getElementById('quizPaletteContainer');
+    container.innerHTML = currentQuiz.questions.map((q, idx) => `
+        <button type="button" class="quiz-palette-btn ${idx === currentQuiz.currentIndex ? 'active' : ''} ${currentQuiz.answers[idx] !== undefined ? 'answered' : ''}" id="paletteBtn_${idx}" onclick="goToQuestion(${idx})">
+            ${idx + 1}
+        </button>
+    `).join('');
+}
+
+function updatePaletteActiveState() {
+    currentQuiz.questions.forEach((q, idx) => {
+        const btn = document.getElementById(`paletteBtn_${idx}`);
+        if (btn) {
+            btn.classList.toggle('active', idx === currentQuiz.currentIndex);
+            btn.classList.toggle('answered', currentQuiz.answers[idx] !== undefined);
         }
     });
-    
-    const scorePercentage = (correct / mockQuestions.length) * 100;
-    pendingSkillPayload.quiz_score = scorePercentage;
-    
-    try {
-        await window.ApiClient.post('/users/me/skills', pendingSkillPayload);
-        window.Toast.success(`Skill verified! You scored ${Math.round(scorePercentage)}% on the assessment.`, 'Competency Saved');
-        
-        document.getElementById('quizModal').style.display = 'none';
-        await loadMySkills();
-        
-        document.getElementById('addSkillForm').reset();
-        document.getElementById('yearsExp').value = "2";
-    } catch (error) {
-        window.Toast.error(error.message || "Failed to add skill.", "Error");
-    } finally {
-        btn.innerHTML = 'Submit Answers & Add Skill';
-        btn.disabled = false;
-        pendingSkillPayload = null;
+}
+
+function selectOption(optIndex) {
+    if (currentQuiz.isSubmitted) return;
+    currentQuiz.answers[currentQuiz.currentIndex] = optIndex;
+    renderCurrentQuestion();
+    updatePaletteActiveState();
+}
+
+function navQuestion(delta) {
+    const newIdx = currentQuiz.currentIndex + delta;
+    if (newIdx >= 0 && newIdx < currentQuiz.questions.length) {
+        currentQuiz.currentIndex = newIdx;
+        renderCurrentQuestion();
     }
+}
+
+function goToQuestion(idx) {
+    if (idx >= 0 && idx < currentQuiz.questions.length) {
+        currentQuiz.currentIndex = idx;
+        renderCurrentQuestion();
+    }
+}
+
+/**
+ * Starts 10-minute exam countdown timer
+ */
+function startQuizTimer() {
+    if (currentQuiz.timer) clearInterval(currentQuiz.timer);
+
+    const timerText = document.getElementById('quizTimerText');
+    const timerDisplay = document.getElementById('quizTimerDisplay');
+
+    const updateTimer = () => {
+        if (currentQuiz.timeRemaining <= 0) {
+            clearInterval(currentQuiz.timer);
+            alert("Time limit reached! Your assessment will now be automatically submitted.");
+            submitQuiz(false);
+            return;
+        }
+
+        currentQuiz.timeRemaining--;
+        const mins = Math.floor(currentQuiz.timeRemaining / 60);
+        const secs = currentQuiz.timeRemaining % 60;
+        timerText.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+        if (currentQuiz.timeRemaining < 120) {
+            timerDisplay.classList.add('urgent');
+        } else {
+            timerDisplay.classList.remove('urgent');
+        }
+    };
+
+    updateTimer();
+    currentQuiz.timer = setInterval(updateTimer, 1000);
+}
+
+/**
+ * Handles immediate proctoring security violation (e.g. Smartphone detected, Tab switch)
+ */
+function handleProctorViolation(details) {
+    if (currentQuiz.isSubmitted) return;
+
+    // Freeze exam
+    currentQuiz.isSubmitted = true;
+    if (currentQuiz.timer) clearInterval(currentQuiz.timer);
+
+    // Show Alarm Banner
+    const banner = document.getElementById('quizViolationBanner');
+    document.getElementById('violationTitle').textContent = `🚨 ${details.title || 'SECURITY VIOLATION'}`;
+    document.getElementById('violationMessage').textContent = details.message;
+    banner.style.display = 'block';
+
+    // Disable all options and buttons
+    document.querySelectorAll('.quiz-option-card').forEach(c => c.style.pointerEvents = 'none');
+    document.getElementById('prevQuestionBtn').disabled = true;
+    document.getElementById('nextQuestionBtn').disabled = true;
+    document.getElementById('submitQuizBtn').disabled = true;
+
+    // Automatically submit with 0% score after brief alarm delay
+    setTimeout(() => {
+        submitQuiz(true, details.message);
+    }, 1200);
+}
+
+function toggleTestSecurityMenu() {
+    const menu = document.getElementById('testSecurityMenu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+/**
+ * Prompts confirmation if questions remain unanswered, then submits
+ */
+function confirmAndSubmitQuiz() {
+    const answeredCount = Object.keys(currentQuiz.answers).length;
+    const total = currentQuiz.questions.length;
+    
+    if (answeredCount < total) {
+        const proceed = confirm(`You have answered ${answeredCount} of ${total} questions. Are you sure you want to finish and submit now?`);
+        if (!proceed) return;
+    }
+
+    submitQuiz(false);
+}
+
+/**
+ * Finalizes assessment, calculates score, shuts down camera, and updates profile
+ */
+async function submitQuiz(isViolation = false, violationReason = "") {
+    if (currentQuiz.timer) clearInterval(currentQuiz.timer);
+    
+    // Stop live proctoring & camera immediately
+    if (window.QuizProctor) {
+        window.QuizProctor.stopSession();
+    }
+
+    let scorePercentage = 0;
+
+    if (isViolation) {
+        scorePercentage = 0; // Immediate failure on security violation
+    } else {
+        let correct = 0;
+        currentQuiz.questions.forEach((q, idx) => {
+            if (currentQuiz.answers[idx] !== undefined && currentQuiz.answers[idx] === q.ans) {
+                correct++;
+            }
+        });
+        scorePercentage = (correct / currentQuiz.questions.length) * 100;
+    }
+
+    if (pendingSkillPayload) {
+        pendingSkillPayload.quiz_score = scorePercentage;
+        
+        try {
+            await window.ApiClient.post('/users/me/skills', pendingSkillPayload);
+            if (isViolation) {
+                window.Toast.error(`Assessment terminated: ${violationReason}`, "Proctoring Violation");
+            } else {
+                window.Toast.success(`Assessment verified! You scored ${Math.round(scorePercentage)}% in ${currentQuiz.skillName}.`, 'Competency Saved');
+            }
+            await loadMySkills();
+        } catch (error) {
+            console.error("Failed to register score", error);
+            window.Toast.error(error.message || "Failed to save verified skill score.", "Error");
+        }
+    }
+
+    // Display Results View
+    document.getElementById('quizPreCheckView').style.display = 'none';
+    document.getElementById('quizActiveView').style.display = 'none';
+    const resultsView = document.getElementById('quizResultsView');
+    resultsView.style.display = 'block';
+
+    const resultsIcon = document.getElementById('resultsIcon');
+    const resultsTitle = document.getElementById('resultsTitle');
+    const resultsSubtitle = document.getElementById('resultsSubtitle');
+    const resultsScore = document.getElementById('resultsScorePercentage');
+    const resultsFeedback = document.getElementById('resultsFeedback');
+
+    if (isViolation) {
+        resultsIcon.textContent = "🚨";
+        resultsTitle.textContent = "Assessment Terminated";
+        resultsTitle.style.color = "#ef4444";
+        resultsSubtitle.textContent = "Auto-submitted due to proctoring security violation";
+        resultsScore.textContent = "0%";
+        resultsScore.style.color = "#ef4444";
+        resultsFeedback.innerHTML = `<strong>Violation Reason:</strong> ${violationReason}<br><br>The proctoring system detected an unauthorized device or activity. A 0% verification score was registered. You may retake the assessment adhering to integrity protocols.`;
+    } else {
+        resultsIcon.textContent = scorePercentage >= 70 ? "🏆" : "📊";
+        resultsTitle.textContent = scorePercentage >= 70 ? "Competency Verified!" : "Assessment Completed";
+        resultsTitle.style.color = "var(--text-primary)";
+        resultsSubtitle.textContent = `10-question evaluation for ${currentQuiz.skillName}`;
+        resultsScore.textContent = `${Math.round(scorePercentage)}%`;
+        resultsScore.style.color = scorePercentage >= 70 ? "var(--success)" : "var(--primary-600)";
+        resultsFeedback.innerHTML = `You answered <strong>${Math.round((scorePercentage / 100) * currentQuiz.questions.length)} of ${currentQuiz.questions.length}</strong> questions correctly.<br>This verified quiz multiplier is now factored directly into your dual-tier job matching algorithms!`;
+    }
+}
+
+/**
+ * Closes modal and resets state cleanly
+ */
+function closeQuizModal() {
+    if (window.QuizProctor) {
+        window.QuizProctor.stopSession();
+    }
+    if (currentQuiz.timer) {
+        clearInterval(currentQuiz.timer);
+    }
+    document.getElementById('quizModal').style.display = 'none';
+    pendingSkillPayload = null;
+    currentQuiz.isSubmitted = false;
+}
+
+function closeQuizModalAndRefresh() {
+    closeQuizModal();
+    const form = document.getElementById('addSkillForm');
+    if (form) form.reset();
+    const yearsExp = document.getElementById('yearsExp');
+    if (yearsExp) yearsExp.value = "2";
 }
 
 async function loadMyApplications() {

@@ -211,33 +211,186 @@
         </div>
     </div>
 
-    <!-- Quiz Modal for Skill Verification -->
-    <div id="quizModal" class="modal-backdrop" style="display: none; z-index: 999;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div>
-                    <h3 style="font-size: 1.35rem; margin-bottom: 0.2rem;">Skill Verification Quiz</h3>
-                    <p id="quizSubtitle" style="font-size: 0.875rem; color: var(--text-muted);">Answer these questions to verify your competency</p>
-                </div>
-                <button type="button" class="btn-close" onclick="closeQuizModal()">✕</button>
-            </div>
+    <!-- Advanced AI Proctored Quiz Modal -->
+    <div id="quizModal" class="modal-backdrop" style="display: none; z-index: 9999;">
+        <div class="modal-content proctor-modal-dialog">
             
-            <div class="modal-body">
-                <div id="quizQuestionsContainer" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <!-- Questions loaded via JS -->
+            <!-- 1. Pre-Assessment Readiness & Consent View -->
+            <div id="quizPreCheckView">
+                <div class="modal-header">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-purple">AI Proctored Exam</span>
+                            <span class="badge badge-green" id="preCheckSkillBadge">Skill Verification</span>
+                        </div>
+                        <h3 style="font-size: 1.4rem;">10-Question Competency Assessment</h3>
+                        <p style="font-size: 0.875rem; color: var(--text-muted);">Standardized verification test for candidate matching score boost</p>
+                    </div>
+                    <button type="button" class="btn-close" onclick="closeQuizModal()">✕</button>
+                </div>
+                
+                <div class="modal-body" style="padding: 1.75rem;">
+                    <div style="background: var(--bg-muted); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid var(--border-subtle);">
+                        <h4 style="font-size: 1.05rem; margin-bottom: 0.85rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🛡️</span> Security & Anti-Cheating Protocol
+                        </h4>
+                        <ul style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; display: flex; flex-direction: column; gap: 0.4rem;">
+                            <li><strong>Webcam Monitoring:</strong> Live video tracks your presence. Your webcam must remain active and unobstructed throughout the exam.</li>
+                            <li><strong>Device Detection:</strong> If secondary electronic devices (e.g. <strong>smartphones, tablets</strong>) are detected in your camera feed, the exam is <strong>immediately terminated and auto-submitted with a 0% score</strong>.</li>
+                            <li><strong>Tab & Focus Lockout:</strong> Switching browser tabs, minimizing the window, or exiting fullscreen records an integrity violation and forces auto-submission.</li>
+                            <li><strong>Anti-Google Lens Shield:</strong> Text selection, right-click, copy-paste shortcuts, and screen captures are blocked. All questions are dynamically watermarked.</li>
+                            <li><strong>Structure:</strong> 10 randomized technical questions • 10 minutes allotted time.</li>
+                        </ul>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                        <input type="checkbox" id="proctorConsentCheck" style="width: 18px; height: 18px; accent-color: var(--primary-600); cursor: pointer;">
+                        <label for="proctorConsentCheck" style="font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+                            I agree to the proctoring rules, allow camera access, and understand that smartphone detection or tab-switching will terminate my exam.
+                        </label>
+                    </div>
+                    
+                    <div id="preCheckStatus" style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-600);"></div>
+                </div>
+
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" class="btn-secondary" onclick="closeQuizModal()">Cancel</button>
+                    <button type="button" id="startProctorQuizBtn" class="btn-primary" onclick="initiateProctoredExam()">
+                        <span>🎥 Enable Camera & Start Assessment</span>
+                    </button>
                 </div>
             </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="closeQuizModal()">Cancel</button>
-                <button type="button" id="submitQuizBtn" class="btn-primary" onclick="submitQuiz()">Submit Answers & Add Skill</button>
+
+            <!-- 2. Active Proctored Quiz View -->
+            <div id="quizActiveView" style="display: none;">
+                <!-- Live Proctoring Top Bar -->
+                <div class="proctor-topbar">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="proctor-cam-card">
+                            <video id="proctorVideo" class="proctor-video-stream" autoplay playsinline muted></video>
+                            <canvas id="proctorCanvas" class="proctor-canvas-overlay"></canvas>
+                            <div class="proctor-cam-badge">
+                                <span class="proctor-rec-dot"></span>
+                                <span>REC</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+                                <span class="badge badge-purple" id="quizActiveSkillBadge">Skill</span>
+                                <span class="badge badge-green" id="proctorShieldStatus">AI Shield: Active</span>
+                            </div>
+                            <h4 id="questionCounterTitle" style="font-size: 1.1rem; color: var(--text-primary); margin: 0;">Question 1 of 10</h4>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Proctored Candidate Assessment</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <!-- Timer -->
+                        <div id="quizTimerDisplay" class="quiz-timer-pill">
+                            <span>⏱️</span>
+                            <span id="quizTimerText">10:00</span>
+                        </div>
+                        
+                        <!-- Test Simulator Trigger for Reviewers -->
+                        <div class="demo-trigger-dropdown" style="position: relative; display: inline-block;">
+                            <button type="button" class="btn-ghost btn-sm" onclick="toggleTestSecurityMenu()" style="border: 1px dashed var(--border-strong); font-size: 0.75rem; padding: 0.35rem 0.65rem;">
+                                🧪 Test Security
+                            </button>
+                            <div id="testSecurityMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 0.5rem; z-index: 10000; min-width: 210px;">
+                                <button type="button" style="width: 100%; text-align: left; padding: 0.45rem 0.6rem; border: none; background: none; cursor: pointer; font-size: 0.82rem; border-radius: 4px; color: var(--danger); font-weight: 600;" onmouseover="this.style.background='var(--bg-muted)'" onmouseout="this.style.background='none'" onclick="window.QuizProctor.simulateViolation('smartphone')">
+                                    🚨 Simulate Smartphone Detect
+                                </button>
+                                <button type="button" style="width: 100%; text-align: left; padding: 0.45rem 0.6rem; border: none; background: none; cursor: pointer; font-size: 0.82rem; border-radius: 4px; color: var(--warning); font-weight: 600;" onmouseover="this.style.background='var(--bg-muted)'" onmouseout="this.style.background='none'" onclick="window.QuizProctor.simulateViolation('tab_switch')">
+                                    🔀 Simulate Tab Switch
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Track -->
+                <div class="quiz-progress-track">
+                    <div id="quizProgressFill" class="quiz-progress-fill" style="width: 10%;"></div>
+                </div>
+
+                <!-- Security Violation Alert Box (shows if triggered) -->
+                <div id="quizViolationBanner" class="violation-banner" style="display: none; margin: 1rem 1.5rem 0;">
+                    <div style="font-size: 2rem; margin-bottom: 0.25rem;">🚨</div>
+                    <h3 id="violationTitle">PROCTORING VIOLATION</h3>
+                    <p id="violationMessage" style="font-size: 0.9rem; margin-bottom: 0.75rem;">An unauthorized device was detected.</p>
+                    <span class="badge badge-red" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">Auto-Submitting Exam with 0% Score...</span>
+                </div>
+
+                <!-- Questions Area with Anti-Google Lens Watermark -->
+                <div class="quiz-secure-container" id="quizQuestionsContainer">
+                    <div class="quiz-watermark-pattern" id="quizWatermarkText">
+                        SKILLBRIDGE VERIFIED EXAM • DO NOT COPY • PROCTORED • 
+                    </div>
+                    
+                    <div class="quiz-content-layer">
+                        <div class="quiz-question-box">
+                            <div class="quiz-question-title" id="currentQuestionText">
+                                Loading question...
+                            </div>
+                            <div class="quiz-options-list" id="currentOptionsList">
+                                <!-- Options rendered via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Question Palette (1..10) -->
+                        <div class="quiz-palette" id="quizPaletteContainer">
+                            <!-- Palette pills 1 to 10 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Navigation -->
+                <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" id="prevQuestionBtn" class="btn-secondary btn-sm" onclick="navQuestion(-1)">
+                        ← Previous
+                    </button>
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <button type="button" id="nextQuestionBtn" class="btn-secondary btn-sm" onclick="navQuestion(1)">
+                            Next →
+                        </button>
+                        <button type="button" id="submitQuizBtn" class="btn-primary btn-sm" onclick="confirmAndSubmitQuiz()">
+                            Submit Assessment
+                        </button>
+                    </div>
+                </div>
             </div>
+
+            <!-- 3. Results Summary View -->
+            <div id="quizResultsView" style="display: none; padding: 2.5rem 2rem; text-align: center;">
+                <div id="resultsIcon" style="font-size: 3.5rem; margin-bottom: 1rem;">🏆</div>
+                <h2 id="resultsTitle" style="font-size: 1.85rem; margin-bottom: 0.5rem;">Assessment Complete</h2>
+                <p id="resultsSubtitle" style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 1.5rem;">Your score has been verified and registered on your profile</p>
+                
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 120px; height: 120px; border-radius: 50%; background: var(--primary-gradient-subtle); border: 3px solid var(--primary-500); margin: 0 auto 1.5rem;">
+                    <span id="resultsScorePercentage" style="font-size: 2.25rem; font-weight: 800; color: var(--primary-600);">80%</span>
+                </div>
+
+                <div id="resultsFeedback" style="max-width: 480px; margin: 0 auto 2rem; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">
+                    Your verified competency score has been recorded and will now boost your match ranking on relevant job openings!
+                </div>
+
+                <button type="button" class="btn-primary" onclick="closeQuizModalAndRefresh()">
+                    Return to Candidate Workspace
+                </button>
+            </div>
+
         </div>
     </div>
+
+    <!-- AI & Anti-Cheat Proctoring Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/matching.js"></script>
+    <script src="assets/js/quiz-bank.js"></script>
+    <script src="assets/js/quiz-proctor.js"></script>
     <script src="assets/js/candidate.js"></script>
     <script>
         function showTab(tabName) {
