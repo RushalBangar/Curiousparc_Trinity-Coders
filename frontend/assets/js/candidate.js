@@ -102,12 +102,12 @@ function renderJobs(jobs) {
             <div class="job-card-header">
                 <div>
                     <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
-                        ${job.title}
+                        ${escapeHTML(job.title)}
                     </h3>
                     <div class="job-meta-row">
-                        <span class="meta-pill">🏢 ${job.company_name}</span>
-                        <span class="meta-pill">📍 ${job.location}</span>
-                        <span class="meta-pill">⏱️ ${job.employment_type}</span>
+                        <span class="meta-pill">🏢 ${escapeHTML(job.company_name)}</span>
+                        <span class="meta-pill">📍 ${escapeHTML(job.location)}</span>
+                        <span class="meta-pill">⏱️ ${escapeHTML(job.employment_type)}</span>
                     </div>
                 </div>
                 <button class="btn-primary" onclick="viewJobDetail('${job.id}')">
@@ -115,7 +115,7 @@ function renderJobs(jobs) {
                 </button>
             </div>
             <p style="font-size: 0.925rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 0.85rem;">
-                ${(job.description || '').substring(0, 180)}...
+                ${escapeHTML(job.description || '').substring(0, 180)}...
             </p>
         </div>
     `).join('');
@@ -322,7 +322,8 @@ async function initiateProctoredExam() {
     try {
         const videoEl = document.getElementById('proctorVideo');
         const canvasEl = document.getElementById('proctorCanvas');
-        const userEmail = (window.Auth && window.Auth.currentUser && window.Auth.currentUser.email) || "candidate@skillbridge.io";
+        const profile = window.Auth.getProfile();
+        const userEmail = (profile && profile.email) || "candidate@skillbridge.io";
 
         // Start live camera and anti-cheat proctoring
         await window.QuizProctor.startSession({
@@ -658,10 +659,10 @@ async function loadMyApplications() {
             <div class="job-card">
                 <div class="job-card-header">
                     <div>
-                        <h3 class="job-title">${app.jobs ? app.jobs.title : 'Job'}</h3>
+                        <h3 class="job-title">${app.jobs ? escapeHTML(app.jobs.title) : 'Job'}</h3>
                         <div class="job-meta">
-                            <span>🏢 ${app.jobs ? app.jobs.company_name : ''}</span>
-                            <span>📍 ${app.jobs ? app.jobs.location : ''}</span>
+                            <span>🏢 ${app.jobs ? escapeHTML(app.jobs.company_name) : ''}</span>
+                            <span>📍 ${app.jobs ? escapeHTML(app.jobs.location) : ''}</span>
                         </div>
                     </div>
                     <span class="badge badge-neutral" style="text-transform: capitalize; font-size: 0.9rem;">${app.status || 'Applied'}</span>

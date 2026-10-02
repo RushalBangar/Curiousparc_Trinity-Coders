@@ -69,6 +69,14 @@ class ApiClient {
     static delete(endpoint, options = {}) {
         return this.request(endpoint, { ...options, method: 'DELETE' });
     }
+
+    static patch(endpoint, data, options = {}) {
+        return this.request(endpoint, {
+            ...options,
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+    }
 }
 
 // Modern, Non-blocking Toast Notification Service
@@ -127,7 +135,21 @@ class ToastService {
     static success(msg, title) { this.show(msg, 'success', title); }
     static error(msg, title) { this.show(msg, 'error', title); }
     static info(msg, title) { this.show(msg, 'info', title); }
+    static warning(msg, title) { this.show(msg, 'warning', title); }
 }
 
 window.ApiClient = ApiClient;
 window.Toast = ToastService;
+window.escapeHTML = function(str) {
+    if (!str) return '';
+    if (typeof str !== 'string') return String(str);
+    return str.replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
+};

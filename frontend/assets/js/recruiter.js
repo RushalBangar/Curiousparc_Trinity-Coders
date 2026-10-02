@@ -70,12 +70,12 @@ async function loadRecruiterJobs() {
                 <div class="job-card-header">
                     <div>
                         <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
-                            ${job.title}
+                            ${escapeHTML(job.title)}
                         </h3>
                         <div class="job-meta-row">
-                            <span class="meta-pill">🏢 ${job.company_name || 'Acme'}</span>
-                            <span class="meta-pill">📍 ${job.location}</span>
-                            <span class="meta-pill">⏱️ ${job.employment_type}</span>
+                            <span class="meta-pill">🏢 ${escapeHTML(job.company_name) || 'Acme'}</span>
+                            <span class="meta-pill">📍 ${escapeHTML(job.location)}</span>
+                            <span class="meta-pill">⏱️ ${escapeHTML(job.employment_type)}</span>
                             <span class="badge badge-green">Active</span>
                         </div>
                     </div>
@@ -84,7 +84,7 @@ async function loadRecruiterJobs() {
                     </button>
                 </div>
                 <p style="font-size: 0.925rem; color: var(--text-secondary); line-height: 1.6;">
-                    ${(job.description || '').substring(0, 160)}...
+                    ${escapeHTML(job.description || '').substring(0, 160)}...
                 </p>
             </div>
         `).join('');
@@ -129,8 +129,8 @@ async function viewApplicants(jobId, jobTitleEncoded) {
                     const rankLabel = idx === 0 ? '🥇 #1' : idx === 1 ? '🥈 #2' : idx === 2 ? '🥉 #3' : `#${idx + 1}`;
                     const rankClass = idx === 0 ? 'top-1' : '';
 
-                    const applicantName = app.profiles ? app.profiles.full_name : 'Candidate';
-                    const applicantEmail = app.profiles ? app.profiles.email : 'hidden@skillbridge.io';
+                    const applicantName = app.profiles ? escapeHTML(app.profiles.full_name) : 'Candidate';
+                    const applicantEmail = app.profiles ? escapeHTML(app.profiles.email) : 'hidden@skillbridge.io';
 
                     return `
                         <div class="candidate-row-card">
@@ -149,8 +149,7 @@ async function viewApplicants(jobId, jobTitleEncoded) {
                                     <option value="applied" ${app.status === 'applied' ? 'selected' : ''}>Applied</option>
                                     <option value="reviewing" ${app.status === 'reviewing' ? 'selected' : ''}>Reviewing</option>
                                     <option value="shortlisted" ${app.status === 'shortlisted' ? 'selected' : ''}>Shortlisted</option>
-                                    <option value="interview" ${app.status === 'interview' ? 'selected' : ''}>Interview</option>
-                                    <option value="declined" ${app.status === 'declined' ? 'selected' : ''}>Declined</option>
+                                    <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
                                 </select>
                             </div>
                         </div>

@@ -5,7 +5,8 @@ from supabase import create_client, Client
 import random
 
 # Load env manually
-load_dotenv(dotenv_path="d:/Web/SkillBridge/backend/.env")
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+load_dotenv(dotenv_path=env_path)
 url = os.getenv("SUPABASE_URL")
 key = os.getenv("SUPABASE_KEY")
 
@@ -100,10 +101,19 @@ jobs_data = [
     }
 ]
 
-# Insert jobs
-jobs_res = supabase.table("jobs").insert(jobs_data).execute()
-inserted_jobs = jobs_res.data
-print(f"Inserted {len(inserted_jobs)} jobs.")
+# Check existing jobs
+existing_jobs_res = supabase.table("jobs").select("title").execute()
+existing_job_titles = {j["title"] for j in existing_jobs_res.data}
+
+jobs_to_insert = [j for j in jobs_data if j["title"] not in existing_job_titles]
+
+if jobs_to_insert:
+    jobs_res = supabase.table("jobs").insert(jobs_to_insert).execute()
+    inserted_jobs = jobs_res.data
+    print(f"Inserted {len(inserted_jobs)} jobs.")
+else:
+    inserted_jobs = []
+    print("Jobs already populated.")
 
 # Assign skills to jobs
 print("Assigning skills to jobs...")

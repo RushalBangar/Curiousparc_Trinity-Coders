@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from supabase import Client
 from app.core.database import get_supabase_client
 from app.models.user import ProfileCreate
@@ -11,7 +11,7 @@ class UserLogin(BaseModel):
     password: str
 
 class UserSignup(ProfileCreate):
-    password: str
+    password: str = Field(..., min_length=8)
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
 def signup(user_data: UserSignup, supabase: Client = Depends(get_supabase_client)):

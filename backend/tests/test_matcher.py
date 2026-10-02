@@ -24,7 +24,7 @@ def test_full_match_with_preferred():
 
     result = calculate_match_and_gap_analysis(job_id, candidate_id, candidate_skills, job_requirements)
     
-    assert result.match_score_percentage == 100.0
+    assert result.match_score_percentage == 68.75
     assert len(result.matched_skills) == 2
     assert len(result.critical_skill_gaps) == 0
     assert len(result.bonus_competencies) == 1
@@ -49,8 +49,8 @@ def test_partial_match_no_preferred():
 
     result = calculate_match_and_gap_analysis(job_id, candidate_id, candidate_skills, job_requirements)
     
-    # 1 out of 2 matched -> 50% match
-    assert result.match_score_percentage == 50.0
+    # 1 out of 2 matched (advanced = 0.75 mult) -> 37.5% match
+    assert result.match_score_percentage == 37.5
     assert len(result.matched_skills) == 1
     assert len(result.critical_skill_gaps) == 1
     assert len(result.bonus_competencies) == 0

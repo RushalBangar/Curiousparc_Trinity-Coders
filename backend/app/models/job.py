@@ -22,10 +22,10 @@ class JobSkillDetail(JobSkillBase):
     skill: Skill
 
 class JobBase(BaseModel):
-    title: str
-    company_name: str
-    description: str
-    location: str
+    title: str = Field(..., max_length=200)
+    company_name: str = Field(..., max_length=200)
+    description: str = Field(..., max_length=5000)
+    location: str = Field(..., max_length=200)
     employment_type: str = Field(..., pattern="^(full-time|part-time|internship|contract)$")
     is_active: bool = True
 

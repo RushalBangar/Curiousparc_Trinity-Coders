@@ -5,7 +5,7 @@ from uuid import UUID
 from app.core.database import get_supabase_client
 from app.core.security import get_current_user
 from app.models.job import JobCreate, Job
-from app.models.match import ApplicationCreate
+from app.models.match import ApplicationCreate, ApplicationUpdate
 from app.services.matcher import calculate_match_and_gap_analysis
 
 router = APIRouter()
@@ -93,7 +93,7 @@ def get_job_detail(
                 candidate_skills=cand_skills_res.data,
                 job_requirements=job_data.get("job_skills", [])
             )
-            job_data["gap_analysis"] = gap_analysis.dict()
+            job_data["gap_analysis"] = gap_analysis.model_dump()
             
         return job_data
     except Exception as e:
@@ -121,6 +121,11 @@ def apply_for_job(
             job_requirements=job_requirements
         )
         
+        # Check if already applied
+        existing = supabase.table("applications").select("id").eq("job_id", str(job_id)).eq("candidate_id", str(current_user.id)).execute()
+        if existing.data:
+            raise HTTPException(status_code=400, detail="You have already applied for this job")
+            
         match_score = gap_analysis.match_score_percentage
         
         payload = {
@@ -169,7 +174,7 @@ def get_job_candidates(
 def update_application_status(
     job_id: UUID,
     candidate_id: UUID,
-    status_data: dict,
+    status_data: ApplicationUpdate,
     current_user: Any = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
 ):
@@ -181,9 +186,7 @@ def update_application_status(
         if str(db_recruiter_id).lower() != str(current_user.id).lower():
             raise HTTPException(status_code=403, detail="Not authorized to update applications for this job")
             
-        new_status = status_data.get("status")
-        if not new_status:
-            raise HTTPException(status_code=400, detail="Status is required")
+        new_status = status_data.status
             
         # Update the status
         response = supabase.table("applications")\
