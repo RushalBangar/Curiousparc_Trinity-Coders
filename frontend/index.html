@@ -1,629 +1,480 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillBridge — Weighted Competency & Skill-to-Job Matching</title>
-    <link rel="icon" type="image/jpeg" href="favicon.jpg">
-    <meta name="description" content="SkillBridge ranks job candidates using dual-tier weighted mathematical algorithms rather than keyword fluff.">
-    <link rel="stylesheet" href="assets/css/main.css">
-    <link rel="stylesheet" href="assets/css/components.css">
-    <style>
-        /* Landing Page Specific Enhancements */
-        .hero-section {
-            padding: 6rem 0 5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--primary-gradient-subtle);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            color: var(--primary-600);
-            padding: 0.4rem 1rem;
-            border-radius: var(--radius-full);
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
-        }
-
-        .hero-title {
-            font-size: clamp(2.5rem, 5vw, 3.85rem);
-            font-weight: 800;
-            line-height: 1.15;
-            letter-spacing: -0.03em;
-            margin-bottom: 1.25rem;
-            max-width: 860px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .hero-subtitle {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            max-width: 680px;
-            margin: 0 auto 2.5rem;
-            line-height: 1.6;
-        }
-
-        .hero-actions {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 4rem;
-        }
-
-        /* Interactive Simulator Card */
-        .demo-showcase {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl);
-            padding: 2.25rem;
-            box-shadow: var(--shadow-xl);
-            max-width: 900px;
-            margin: 0 auto;
-            position: relative;
-            text-align: left;
-        }
-
-        .demo-top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.75rem;
-            padding-bottom: 1.25rem;
-            border-bottom: 1px solid var(--border-subtle);
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .demo-title-group h3 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .demo-title-group p {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .interactive-skills-selector {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin: 1.25rem 0 1.75rem;
-        }
-
-        .interactive-skill-btn {
-            background: var(--bg-muted);
-            border: 1.5px solid var(--border-subtle);
-            color: var(--text-secondary);
-            padding: 0.5rem 0.95rem;
-            border-radius: var(--radius-full);
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .interactive-skill-btn.selected {
-            background: var(--primary-gradient);
-            color: white;
-            border-color: transparent;
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
-        }
-
-        .demo-results-grid {
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            gap: 1.5rem;
-            background: var(--bg-muted);
-            padding: 1.5rem;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-subtle);
-            align-items: center;
-        }
-
-        @media (max-width: 720px) {
-            .demo-results-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .demo-score-dial-wrap {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            border-right: 1px solid var(--border-subtle);
-            padding-right: 1.5rem;
-        }
-
-        @media (max-width: 720px) {
-            .demo-score-dial-wrap {
-                border-right: none;
-                border-bottom: 1px solid var(--border-subtle);
-                padding-right: 0;
-                padding-bottom: 1rem;
-            }
-        }
-
-        .demo-score-number {
-            font-size: 3rem;
-            font-weight: 800;
-            line-height: 1;
-            color: var(--success);
-            margin-bottom: 0.25rem;
-        }
-
-        /* Metrics Bar */
-        .metrics-section {
-            padding: 3rem 0;
-            border-top: 1px solid var(--border-subtle);
-            border-bottom: 1px solid var(--border-subtle);
-            background: var(--bg-surface);
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 2rem;
-            text-align: center;
-        }
-
-        .metric-value {
-            font-size: 2.75rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            line-height: 1.1;
-            margin-bottom: 0.35rem;
-        }
-
-        .metric-label {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        /* Features Section */
-        .features-section {
-            padding: 5rem 0;
-        }
-
-        .section-heading-center {
-            text-align: center;
-            max-width: 680px;
-            margin: 0 auto 3.5rem;
-        }
-
-        .section-heading-center h2 {
-            font-size: 2.25rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.75rem;
-        }
-
-        .feature-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl);
-            padding: 2.25rem;
-            box-shadow: var(--shadow-sm);
-            transition: all var(--transition-fast);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-xl);
-            border-color: var(--primary-500);
-        }
-
-        .feature-icon-box {
-            width: 52px;
-            height: 52px;
-            border-radius: var(--radius-lg);
-            background: var(--primary-gradient-subtle);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: var(--primary-600);
-            margin-bottom: 1.25rem;
-            border: 1px solid rgba(79, 70, 229, 0.15);
-        }
-
-        /* CTA Banner */
-        .cta-banner {
-            margin: 4rem auto;
-            background: var(--primary-gradient);
-            border-radius: var(--radius-xl);
-            padding: 4rem 2rem;
-            color: white;
-            text-align: center;
-            box-shadow: var(--shadow-xl);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-banner h2 {
-            color: white;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .cta-banner p {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.15rem;
-            max-width: 600px;
-            margin: 0 auto 2rem;
-        }
-
-        .cta-banner .btn-secondary {
-            background: #ffffff !important;
-            color: var(--primary-600) !important;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-
-        .cta-banner .btn-secondary:hover {
-            background: #f8fafc !important;
-            color: var(--primary-700) !important;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .cta-banner .btn-ghost {
-            background: rgba(255, 255, 255, 0.15) !important;
-            color: #ffffff !important;
-            border: 1px solid rgba(255, 255, 255, 0.35);
-        }
-
-        .cta-banner .btn-ghost:hover {
-            background: rgba(255, 255, 255, 0.28) !important;
-            color: #ffffff !important;
-            border-color: rgba(255, 255, 255, 0.7);
-            transform: translateY(-2px);
-        }
-    </style>
-</head>
-<body>
-    <!-- Site Header -->
-    <header class="site-header">
-        <div class="container">
-            <a href="index.html" class="brand-logo" style="display: flex; align-items: center; gap: 0.75rem;">
-                <img src="assets/images/logo.jpg" alt="SkillBridge Logo" style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover;">
-                <span>Skill<span class="brand-gradient-text">Bridge</span></span>
-            </a>
-            <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mainNav">
-                <div class="hamburger-icon"><span></span><span></span><span></span></div>
-            </button>
-            <nav class="main-nav" id="mainNav">
-                <a href="#how-it-works" onclick="closeMobileMenu()">How It Works</a>
-                <a href="#features" onclick="closeMobileMenu()">Algorithm</a>
-                <a href="login.html" onclick="closeMobileMenu()">Sign In</a>
-                <a href="register.html" class="btn-primary btn-sm" onclick="closeMobileMenu()">Get Started</a>
-            </nav>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-primary":"#ffffff","on-error-container":"#93000a","primary-fixed-dim":"#c3c0ff","primary-container":"#4338ca","primary":"#2a14b4","on-tertiary-container":"#66daa8","outline-variant":"#c7c4d7","on-primary-fixed-variant":"#372abf","inverse-surface":"#213145","surface-container-high":"#dce9ff","surface-container-low":"#eff4ff","surface-container-lowest":"#ffffff","on-secondary-fixed":"#111c2d","tertiary-fixed-dim":"#68dba9","tertiary":"#00442d","inverse-on-surface":"#eaf1ff","surface-tint":"#5148d7","on-secondary-container":"#586377","surface-container-highest":"#d3e4fe","error-container":"#ffdad6","on-tertiary-fixed":"#002114","on-background":"#0b1c30","surface-bright":"#f8f9ff","surface-container":"#e5eeff","on-surface":"#0b1c30","secondary-fixed":"#d8e3fb","error":"#ba1a1a","surface":"#f8f9ff","background":"#f8f9ff","on-surface-variant":"#464554","on-primary-fixed":"#100069","on-primary-container":"#c1beff","tertiary-container":"#005e40","secondary-fixed-dim":"#bcc7de","on-secondary-fixed-variant":"#3c475a","on-tertiary":"#ffffff","inverse-primary":"#c3c0ff","surface-variant":"#d3e4fe","tertiary-fixed":"#85f8c4","on-tertiary-fixed-variant":"#005137","on-secondary":"#ffffff","surface-dim":"#cbdbf5","secondary-container":"#d5e0f8","secondary":"#545f73","outline":"#777586","primary-fixed":"#e3dfff","on-error":"#ffffff"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"margin-sm":"1rem","space-lg":"1.5rem","gutter-sm":"1rem","space-md":"1rem","gutter":"1.5rem","space-xl":"2.5rem","margin":"2rem","space-sm":"0.5rem","space-xs":"0.25rem"},fontFamily:{"headline-lg":["Inter"],"body-sm":["Inter"],"label-lg":["Inter"],"data-metric":["Inter"],"label-md":["Inter"],"body-md":["Inter"],"display-lg":["Inter"],"body-lg":["Inter"],"headline-md":["Inter"],"label-sm":["Inter"],"headline-sm":["Inter"],"display-lg-mobile":["Inter"]},fontSize:{"headline-lg":["24px",{lineHeight:"32px",letterSpacing:"-0.02em",fontWeight:"600"}],"body-sm":["12px",{lineHeight:"16px",fontWeight:"400"}],"label-lg":["14px",{lineHeight:"20px",letterSpacing:"-0.005em",fontWeight:"600"}],"data-metric":["28px",{lineHeight:"32px",letterSpacing:"-0.03em",fontWeight:"700"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0em",fontWeight:"500"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"display-lg":["36px",{lineHeight:"44px",letterSpacing:"-0.025em",fontWeight:"700"}],"body-lg":["16px",{lineHeight:"24px",fontWeight:"400"}],"headline-md":["20px",{lineHeight:"28px",letterSpacing:"-0.015em",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.025em",fontWeight:"600"}],"headline-sm":["16px",{lineHeight:"24px",letterSpacing:"-0.01em",fontWeight:"600"}],"display-lg-mobile":["28px",{lineHeight:"36px",letterSpacing:"-0.02em",fontWeight:"700"}]}}}}</script>
+<title>SkillBridge — Hire on Real Skills</title>
+</head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col"><header class="fixed top-0 left-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 w-full px-margin flex items-center justify-between"><div class="flex items-center gap-space-xl"><a class="flex items-center gap-space-sm group" data-path="landing-page" href="index.html"><div class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center text-on-primary shadow-[0_1px_3px_0_rgba(15,23,42,0.04)]"><span class="material-symbols-outlined text-[20px]">verified_user</span></div><span class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">SkillBridge</span></a><nav class="hidden md:flex items-center gap-space-lg" data-active-classes="text-primary font-semibold"><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="how-it-works" href="#how-it-works">How It Works</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="algorithm" href="#algorithm">Algorithm</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="for-employers" href="#">For Employers</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="pricing" href="#">Pricing</a></nav></div><div class="flex items-center gap-space-md"><a class="hidden sm:inline-flex items-center justify-center h-10 px-space-md rounded-xl font-label-lg text-label-lg text-on-surface bg-surface-container-lowest hover:bg-surface-container-low transition-colors shadow-[0_1px_3px_0_rgba(15,23,42,0.04)]" data-path="sign-in" href="login.html">Sign In</a><a class="inline-flex items-center justify-center h-10 px-space-lg rounded-xl font-label-lg text-label-lg bg-primary-container text-on-primary hover:bg-primary transition-colors shadow-[0_1px_3px_0_rgba(15,23,42,0.04)]" data-path="get-started" href="register.html">Get Started</a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface flex-1"><div class="flex flex-col w-full">
+<!-- Subtle ambient background gradients (contained within relative sections) -->
+<!-- HERO SECTION -->
+<section class="relative w-full overflow-hidden px-margin py-space-xl sm:py-24 flex flex-col items-center text-center">
+<!-- Ambient backlights -->
+<div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[380px] bg-primary-container/10 rounded-full blur-[100px] pointer-events-none -z-10"></div>
+<div class="absolute top-48 right-12 w-80 h-80 bg-tertiary-fixed-dim/15 rounded-full blur-[80px] pointer-events-none -z-10"></div>
+<!-- Status pill / overline -->
+<div class="inline-flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-low text-primary-container shadow-sm mb-space-lg">
+<span class="text-sm">✨</span>
+<span class="font-label-sm text-label-sm tracking-wide uppercase font-semibold">Dual-Tier Weighted Matching Engine</span>
+</div>
+<!-- Main Hero Heading -->
+<h1 class="max-w-4xl font-display-lg text-display-lg sm:text-[52px] sm:leading-[60px] text-on-surface font-bold tracking-tight mb-space-md">
+      Hire on <span class="text-primary-container relative inline-block">Real Skills<svg class="absolute -bottom-1 left-0 w-full h-2 text-primary-fixed-dim pointer-events-none" preserveaspectratio="none" viewbox="0 0 100 8"><path d="M0,5 Q50,0 100,5" fill="none" stroke="currentColor" stroke-width="4"></path></svg></span>, Not Keyword Fluff
+    </h1>
+<!-- Subtitle -->
+<p class="max-w-2xl font-body-lg text-body-lg text-on-surface-variant mb-space-xl">
+      SkillBridge uses a mathematical competency algorithm (<span class="font-semibold text-on-surface">75% Mandatory</span> + <span class="font-semibold text-on-surface">25% Preferred</span>) to rank candidates objectively and expose actionable skill gaps.
+    </p>
+<!-- Hero CTA Pair -->
+<div class="flex flex-wrap items-center justify-center gap-space-md mb-space-xl">
+<a class="inline-flex items-center justify-center h-12 px-7 rounded-xl font-label-lg text-label-lg bg-primary-container text-on-primary hover:bg-primary shadow-md transition-all transform hover:-translate-y-0.5" data-path="candidate-portal" href="register.html?role=candidate">
+<span class="material-symbols-outlined text-[18px] mr-2">badge</span>
+        I'm a Candidate
+      </a>
+<a class="inline-flex items-center justify-center h-12 px-7 rounded-xl font-label-lg text-label-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low shadow-sm transition-all" data-path="employer-portal" href="register.html?role=recruiter">
+<span class="material-symbols-outlined text-[18px] mr-2">domain</span>
+        I'm an Employer
+      </a>
+</div>
+<!-- INTERACTIVE DEMO CONTAINER (Centerpiece) -->
+<div class="w-full max-w-4xl mx-auto text-left rounded-xl bg-surface-container-lowest shadow-xl p-space-md sm:p-space-lg">
+<!-- Demo Top Bar -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pb-space-md mb-space-md bg-surface-container-low/50 -m-space-md sm:-m-space-lg p-space-md sm:p-space-lg rounded-t-xl">
+<div class="flex items-center gap-space-sm">
+<div class="w-2.5 h-2.5 rounded-full bg-tertiary-container animate-pulse"></div>
+<span class="font-label-sm text-label-sm font-semibold tracking-wider text-primary-container uppercase">Live Interactive Demo</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Real-time Matrix Calculation</span>
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-container-high text-primary-container">v4.2</span>
+</div>
+</div>
+<!-- Target Role Spec -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-space-md">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">Target Role: Senior Full-Stack Engineer</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Toggle candidate skills below to watch the matching score &amp; gap analysis recalculate in real-time!</p>
+</div>
+<div class="px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm self-start sm:self-center">
+<span class="font-semibold text-on-surface">Req:</span> Python, FastAPI, React <span class="mx-1 text-outline">|</span> <span class="font-semibold text-on-surface">Pref:</span> Docker, Postgres
         </div>
-    </header>
-
-    <main>
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <div class="gradient-mesh-bg"></div>
-            <div class="container" style="text-align: center; position: relative; z-index: 2;">
-                <div class="hero-badge">
-                    <span>✨</span> Dual-Tier Weighted Matching Engine
-                </div>
-                <h1 class="hero-title">
-                    Hire on <span class="brand-gradient-text">Real Skills</span>, Not Keyword Fluff
-                </h1>
-                <p class="hero-subtitle">
-                    SkillBridge uses a mathematical competency algorithm (75% Mandatory + 25% Preferred) to rank candidates objectively and expose actionable skill gaps.
-                </p>
-                <div class="hero-actions">
-                    <a href="register.html?role=seeker" class="btn-primary btn-lg">
-                        I'm a Candidate
-                    </a>
-                    <a href="register.html?role=recruiter" class="btn-secondary btn-lg">
-                        I'm an Employer
-                    </a>
-                </div>
-
-                <!-- Interactive Live Match Simulator -->
-                <div class="demo-showcase">
-                    <div class="demo-top-bar">
-                        <div class="demo-title-group">
-                            <span class="badge badge-purple" style="margin-bottom: 0.4rem;">Live Interactive Demo</span>
-                            <h3>Target Role: Senior Full-Stack Engineer</h3>
-                            <p>Toggle candidate skills below to watch the matching score & gap analysis recalculate in real-time!</p>
-                        </div>
-                        <div class="meta-pill" style="font-weight: 600;">
-                            Req: Python, FastAPI, React | Pref: Docker, Postgres
-                        </div>
-                    </div>
-
-                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
-                        Candidate Verified Skills (Click to Toggle):
-                    </div>
-                    <div class="interactive-skills-selector" id="demoSkillsSelector">
-                        <button class="interactive-skill-btn selected" data-skill="Python" data-type="req" onclick="toggleDemoSkill(this)">✓ Python (Req)</button>
-                        <button class="interactive-skill-btn selected" data-skill="FastAPI" data-type="req" onclick="toggleDemoSkill(this)">✓ FastAPI (Req)</button>
-                        <button class="interactive-skill-btn" data-skill="React" data-type="req" onclick="toggleDemoSkill(this)">+ React (Req)</button>
-                        <button class="interactive-skill-btn selected" data-skill="Docker" data-type="pref" onclick="toggleDemoSkill(this)">✓ Docker (Pref)</button>
-                        <button class="interactive-skill-btn" data-skill="Postgres" data-type="pref" onclick="toggleDemoSkill(this)">+ Postgres (Pref)</button>
-                    </div>
-
-                    <div class="demo-results-grid">
-                        <div class="demo-score-dial-wrap">
-                            <div class="demo-score-number" id="demoScoreDisplay">62.5%</div>
-                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Overall Compatibility</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted);">(75% Req + 25% Pref)</div>
-                        </div>
-                        <div id="demoBreakdownContainer">
-                            <div style="margin-bottom: 0.75rem;">
-                                <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Verified Matches:</span>
-                                <div class="skill-tags" id="demoMatchedTags" style="margin-top: 0.25rem;">
-                                    <span class="badge badge-green">✓ Python</span>
-                                    <span class="badge badge-green">✓ FastAPI</span>
-                                    <span class="badge badge-blue">★ Docker</span>
-                                </div>
-                            </div>
-                            <div>
-                                <span style="font-size: 0.85rem; font-weight: 700; color: var(--danger);">Critical Gaps:</span>
-                                <div class="skill-tags" id="demoGapTags" style="margin-top: 0.25rem;">
-                                    <span class="badge badge-red">✗ React (Missing Required)</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Social Proof Metrics -->
-        <section class="metrics-section reveal">
-            <div class="container">
-                <div class="metrics-grid stagger-children">
-                    <div>
-                        <div class="metric-value">94.2%</div>
-                        <div class="metric-label">Match Precision Accuracy</div>
-                    </div>
-                    <div>
-                        <div class="metric-value">3.5x</div>
-                        <div class="metric-label">Faster Technical Screening</div>
-                    </div>
-                    <div>
-                        <div class="metric-value">0%</div>
-                        <div class="metric-label">Keyword Inflation Bias</div>
-                    </div>
-                    <div>
-                        <div class="metric-value">12,000+</div>
-                        <div class="metric-label">Normalized Tech Skills Mapped</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- How It Works Section -->
-        <section id="how-it-works" style="padding: 5rem 0; background: var(--bg-base);">
-            <div class="container">
-                <div class="section-heading-center reveal">
-                    <span class="badge badge-blue" style="margin-bottom: 0.5rem;">How It Works</span>
-                    <h2>Three Steps to Smarter Hiring</h2>
-                    <p>SkillBridge replaces resume guesswork with transparent, mathematical skill evaluation.</p>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;" class="stagger-children reveal">
-                    <div class="feature-card" style="text-align: center; padding: 2.5rem 2rem;">
-                        <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary-gradient); color: white; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 6px 18px rgba(79, 70, 229, 0.3);">1</div>
-                        <h3 style="margin-bottom: 0.65rem;">Tag Your Skills</h3>
-                        <p>Candidates select technical competencies from a standardized taxonomy and set proficiency levels (Beginner → Expert).</p>
-                    </div>
-                    <div class="feature-card" style="text-align: center; padding: 2.5rem 2rem;">
-                        <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); color: white; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);">2</div>
-                        <h3 style="margin-bottom: 0.65rem;">Algorithm Scores You</h3>
-                        <p>Our weighted dual-tier engine evaluates your skills against each job's mandatory (75%) and preferred (25%) requirements.</p>
-                    </div>
-                    <div class="feature-card" style="text-align: center; padding: 2.5rem 2rem;">
-                        <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3);">3</div>
-                        <h3 style="margin-bottom: 0.65rem;">Bridge the Gaps</h3>
-                        <p>Missing a required skill? SkillBridge surfaces curated learning roadmaps so you can upskill and re-apply stronger.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="features-section" id="features">
-            <div class="container">
-                <div class="section-heading-center reveal">
-                    <span class="badge badge-purple" style="margin-bottom: 0.5rem;">Why SkillBridge</span>
-                    <h2>Engineered for Technical Truth</h2>
-                    <p>Static PDF resumes reward formatting tricks. SkillBridge solves tech hiring with mathematical transparency.</p>
-                </div>
-
-                <div class="features-grid stagger-children reveal">
-                    <div class="feature-card">
-                        <div class="feature-icon-box">⚖️</div>
-                        <h3 style="margin-bottom: 0.65rem;">Weighted Dual-Tier Algorithm</h3>
-                        <p>Mandatory skills govern 75% of candidate scores while nice-to-have competencies contribute 25%, preventing irrelevant keyword stuffing.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon-box">🔍</div>
-                        <h3 style="margin-bottom: 0.65rem;">Transparent Gap Analysis</h3>
-                        <p>Candidates get an instant breakdown of missing requirements, bonus skills, and actionable upskilling steps before they even apply.</p>
-                    </div>
-
-                    <div class="feature-card">
-                        <div class="feature-icon-box">📊</div>
-                        <h3 style="margin-bottom: 0.65rem;">Objective Recruiter Pipeline</h3>
-                        <p>Recruiters instantly see applicants sorted in descending order of true technical compatibility with zero manual resume scanning.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Call to Action Banner -->
-        <div class="container reveal">
-            <div class="cta-banner noise-overlay" style="position: relative;">
-                <h2 style="position: relative; z-index: 2;">Ready for Smarter Tech Hiring?</h2>
-                <p style="position: relative; z-index: 2;">Join candidates getting matched to jobs they actually qualify for, and companies hiring engineers based on proof.</p>
-                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; position: relative; z-index: 2;">
-                    <a href="register.html?role=seeker" class="btn-secondary btn-lg" style="background: white; color: var(--primary-600) !important;">Create Candidate Profile</a>
-                    <a href="register.html?role=recruiter" class="btn-ghost btn-lg" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);">Post a Job Posting</a>
-                </div>
-            </div>
+</div>
+<!-- Skill Toggle Section -->
+<div class="p-space-md rounded-xl bg-surface-container-low mb-space-lg">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-on-surface-variant tracking-wider">Candidate Verified Skills (Click to Toggle):</span>
+<span class="text-xs text-secondary">Click any chip to re-weight</span>
+</div>
+<div class="flex flex-wrap gap-2" id="skills-toggle-group">
+<!-- Python (Req) - Active -->
+<button class="skill-pill active inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm bg-primary-container text-on-primary shadow-sm hover:opacity-95 transition-all" data-skill="python" data-type="req">
+<span class="status-icon material-symbols-outlined text-[15px]">check</span>
+<span>Python</span>
+<span class="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 uppercase font-semibold">Req</span>
+</button>
+<!-- FastAPI (Req) - Active -->
+<button class="skill-pill active inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm bg-primary-container text-on-primary shadow-sm hover:opacity-95 transition-all" data-skill="fastapi" data-type="req">
+<span class="status-icon material-symbols-outlined text-[15px]">check</span>
+<span>FastAPI</span>
+<span class="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 uppercase font-semibold">Req</span>
+</button>
+<!-- React (Req) - Inactive -->
+<button class="skill-pill inactive inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container-lowest text-on-surface-variant shadow-sm hover:bg-surface-container-high transition-all" data-skill="react" data-type="req">
+<span class="status-icon material-symbols-outlined text-[15px]">add</span>
+<span>React</span>
+<span class="text-[10px] px-1.5 py-0.2 rounded-full bg-surface-container-high text-on-surface-variant uppercase font-semibold">Req</span>
+</button>
+<!-- Docker (Pref) - Active -->
+<button class="skill-pill active inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container-highest text-primary font-semibold shadow-sm hover:opacity-95 transition-all" data-skill="docker" data-type="pref">
+<span class="status-icon material-symbols-outlined text-[15px]">check</span>
+<span>Docker</span>
+<span class="text-[10px] px-1.5 py-0.2 rounded-full bg-primary/10 text-primary uppercase font-semibold">Pref</span>
+</button>
+<!-- Postgres (Pref) - Inactive -->
+<button class="skill-pill inactive inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container-lowest text-on-surface-variant shadow-sm hover:bg-surface-container-high transition-all" data-skill="postgres" data-type="pref">
+<span class="status-icon material-symbols-outlined text-[15px]">add</span>
+<span>Postgres</span>
+<span class="text-[10px] px-1.5 py-0.2 rounded-full bg-surface-container-high text-on-surface-variant uppercase font-semibold">Pref</span>
+</button>
+</div>
+</div>
+<!-- Live Calculation Breakdown Card -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-space-md p-space-md sm:p-space-lg rounded-xl bg-surface-container-low shadow-sm">
+<!-- Score Display Column -->
+<div class="md:col-span-4 flex flex-col justify-center items-center md:items-start p-space-md rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="flex items-baseline gap-1">
+<span class="font-data-metric text-4xl sm:text-5xl font-extrabold text-primary-container tracking-tight" id="demo-score-text">62.5%</span>
+</div>
+<span class="font-label-lg text-label-lg font-bold text-on-surface mt-1">Overall Compatibility</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">(75% Req + 25% Pref)</span>
+<!-- Animated progress bar -->
+<div class="w-full h-2 rounded-full bg-surface-container-high mt-space-md overflow-hidden">
+<div class="h-full bg-primary-container transition-all duration-300 rounded-full" id="demo-score-bar" style="width: 62.5%"></div>
+</div>
+</div>
+<!-- Matched & Gap details -->
+<div class="md:col-span-8 flex flex-col justify-between gap-space-md p-space-md rounded-xl bg-surface-container-lowest shadow-sm">
+<!-- Verified Matches -->
+<div>
+<div class="flex items-center gap-1.5 mb-2">
+<span class="material-symbols-outlined text-tertiary-container text-[18px]">verified</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Verified Matches:</span>
+</div>
+<div class="flex flex-wrap gap-2" id="verified-matches-list">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-tertiary shadow-sm">
+<span class="material-symbols-outlined text-[14px]">check</span> Python
+              </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-tertiary shadow-sm">
+<span class="material-symbols-outlined text-[14px]">check</span> FastAPI
+              </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-secondary-fixed text-on-secondary-fixed shadow-sm">
+<span class="material-symbols-outlined text-[14px]">star</span> Docker
+              </span>
+</div>
+</div>
+<!-- Critical Gaps Alert Box -->
+<div class="p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-1.5 mb-1.5">
+<span class="material-symbols-outlined text-error text-[18px]">warning</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Critical Gaps &amp; Roadmap:</span>
+</div>
+<div class="flex flex-wrap items-center gap-2" id="critical-gaps-list">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-error-container text-on-error-container shadow-sm">
+<span class="material-symbols-outlined text-[14px]">close</span> React (Missing Required)
+              </span>
+<span class="text-xs text-on-surface-variant italic">Suggest: React 18 Patterns Course (+25.0% score surge)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- IMPACT & METRICS TRUST STRIP -->
+<section class="w-full bg-surface-container-low py-space-xl px-margin" id="algorithm">
+<div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-space-lg">
+<!-- Metric 1 -->
+<div class="flex flex-col items-center md:items-start text-center md:text-left p-space-md rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-space-sm">
+<span class="material-symbols-outlined text-[20px]">target</span>
+</div>
+<span class="font-data-metric text-data-metric text-on-surface font-extrabold tracking-tight">94.2%</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold mt-1">Match Precision Accuracy</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Dual-weighted technical verification</span>
+</div>
+<!-- Metric 2 -->
+<div class="flex flex-col items-center md:items-start text-center md:text-left p-space-md rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-9 h-9 rounded-lg bg-tertiary-fixed text-tertiary flex items-center justify-center mb-space-sm">
+<span class="material-symbols-outlined text-[20px]">speed</span>
+</div>
+<span class="font-data-metric text-data-metric text-on-surface font-extrabold tracking-tight">3.5x</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold mt-1">Faster Technical Screening</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Instant deterministic score generation</span>
+</div>
+<!-- Metric 3 -->
+<div class="flex flex-col items-center md:items-start text-center md:text-left p-space-md rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-9 h-9 rounded-lg bg-secondary-fixed text-secondary flex items-center justify-center mb-space-sm">
+<span class="material-symbols-outlined text-[20px]">filter_alt_off</span>
+</div>
+<span class="font-data-metric text-data-metric text-on-surface font-extrabold tracking-tight">0%</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold mt-1">Keyword Inflation Bias</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Proof-based competency taxonomy</span>
+</div>
+<!-- Metric 4 -->
+<div class="flex flex-col items-center md:items-start text-center md:text-left p-space-md rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-9 h-9 rounded-lg bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center mb-space-sm">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+</div>
+<span class="font-data-metric text-data-metric text-on-surface font-extrabold tracking-tight">12,000+</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold mt-1">Normalized Tech Skills</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Standardized developer ontology</span>
+</div>
+</div>
+</section>
+<!-- HOW IT WORKS SECTION -->
+<section class="w-full py-space-xl sm:py-24 px-margin bg-surface" id="how-it-works">
+<div class="max-w-5xl mx-auto flex flex-col items-center text-center mb-space-xl">
+<div class="inline-flex items-center px-space-md py-1 rounded-full bg-surface-container-low text-primary-container font-label-sm text-label-sm font-semibold uppercase mb-space-sm">
+        How It Works
+      </div>
+<h2 class="font-headline-lg text-display-lg sm:text-[40px] sm:leading-[48px] text-on-surface font-bold tracking-tight mb-space-sm">
+        Three Steps to Smarter Hiring
+      </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+        SkillBridge replaces resume guesswork with transparent, mathematical skill evaluation.
+      </p>
+</div>
+<!-- 3 Step Cards Grid -->
+<div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Step 1 -->
+<div class="relative flex flex-col items-start p-space-xl rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div class="w-12 h-12 rounded-xl bg-primary-container text-on-primary font-headline-md text-headline-md font-bold flex items-center justify-center mb-space-lg shadow-sm">
+          1
         </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="container">
-            <div class="footer-content">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-weight: 800; color: var(--text-primary);">⚡ SkillBridge</span>
-                    <span>— Skill-to-Job Matching System</span>
-                </div>
-                <div class="system-status">
-                    <div class="system-status-dot"></div>
-                    <span>Algorithm & Matching Engine Active</span>
-                </div>
-                <p>&copy; 2026 SkillBridge Platform. All rights reserved.</p>
-            </div>
+<h3 class="font-headline-sm text-headline-md text-on-surface font-bold mb-space-xs">Tag Your Skills</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+          Candidates select technical competencies from a standardized taxonomy and set proficiency levels (Beginner → Expert).
+        </p>
+<div class="mt-space-lg pt-space-md w-full flex items-center gap-2 bg-surface-container-low p-space-sm rounded-lg">
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+<span class="text-xs font-semibold text-on-surface">Standardized Skill Taxonomies</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative flex flex-col items-start p-space-xl rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div class="w-12 h-12 rounded-xl bg-tertiary-container text-on-tertiary font-headline-md text-headline-md font-bold flex items-center justify-center mb-space-lg shadow-sm">
+          2
         </div>
-    </footer>
+<h3 class="font-headline-sm text-headline-md text-on-surface font-bold mb-space-xs">Algorithm Scores You</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+          Our weighted dual-tier engine evaluates your skills against each job's mandatory (75%) and preferred (25%) requirements.
+        </p>
+<div class="mt-space-lg pt-space-md w-full flex items-center gap-2 bg-surface-container-low p-space-sm rounded-lg">
+<span class="material-symbols-outlined text-tertiary text-[18px]">calculate</span>
+<span class="text-xs font-semibold text-on-surface">Deterministic Mathematical Matrix</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="relative flex flex-col items-start p-space-xl rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div class="w-12 h-12 rounded-xl bg-surface-tint text-on-primary font-headline-md text-headline-md font-bold flex items-center justify-center mb-space-lg shadow-sm">
+          3
+        </div>
+<h3 class="font-headline-sm text-headline-md text-on-surface font-bold mb-space-xs">Bridge the Gaps</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+          Missing a required skill? SkillBridge surfaces curated learning roadmaps so you can upskill and re-apply stronger.
+        </p>
+<div class="mt-space-lg pt-space-md w-full flex items-center gap-2 bg-surface-container-low p-space-sm rounded-lg">
+<span class="material-symbols-outlined text-surface-tint text-[18px]">school</span>
+<span class="text-xs font-semibold text-on-surface">Targeted Upskill Blueprints</span>
+</div>
+</div>
+</div>
+</section>
+<!-- WHY SKILLBRIDGE SECTION -->
+<section class="w-full py-space-xl sm:py-24 px-margin bg-surface-container-low">
+<div class="max-w-5xl mx-auto flex flex-col items-center text-center mb-space-xl">
+<div class="inline-flex items-center px-space-md py-1 rounded-full bg-surface-container-lowest text-primary-container font-label-sm text-label-sm font-semibold uppercase mb-space-sm shadow-sm">
+        Why SkillBridge
+      </div>
+<h2 class="font-headline-lg text-display-lg sm:text-[40px] sm:leading-[48px] text-on-surface font-bold tracking-tight mb-space-sm">
+        Engineered for Technical Truth
+      </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+        Static PDF resumes reward formatting tricks. SkillBridge solves tech hiring with mathematical transparency.
+      </p>
+</div>
+<!-- High-end Enterprise Feature Cards -->
+<div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Feature 1: Dual-Tier Algorithm -->
+<div class="flex flex-col justify-between p-space-xl rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-container mb-space-md shadow-sm">
+<span class="material-symbols-outlined text-[26px]">balance</span>
+</div>
+<h3 class="font-headline-sm text-headline-md text-on-surface font-bold mb-space-xs">
+            Weighted Dual-Tier Algorithm
+          </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            Mandatory skills govern 75% of candidate scores while nice-to-have competencies contribute 25%, preventing irrelevant keyword stuffing.
+          </p>
+</div>
+<div class="mt-space-lg pt-space-md flex items-center justify-between">
+<span class="text-xs font-bold text-primary-container">75% Core / 25% Bonus</span>
+<span class="material-symbols-outlined text-outline text-[16px]">arrow_forward</span>
+</div>
+</div>
+<!-- Feature 2: Gap Analysis -->
+<div class="flex flex-col justify-between p-space-xl rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-container mb-space-md shadow-sm">
+<span class="material-symbols-outlined text-[26px]">troubleshoot</span>
+</div>
+<h3 class="font-headline-sm text-headline-md text-on-surface font-bold mb-space-xs">
+            Transparent Gap Analysis
+          </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            Candidates get an instant breakdown of missing requirements, bonus skills, and actionable upskilling steps before they even apply.
+          </p>
+</div>
+<div class="mt-space-lg pt-space-md flex items-center justify-between">
+<span class="text-xs font-bold text-primary-container">Proactive Skill Remediation</span>
+<span class="material-symbols-outlined text-outline text-[16px]">arrow_forward</span>
+</div>
+</div>
+<!-- Feature 3: Objective Pipeline -->
+<div class="flex flex-col justify-between p-space-xl rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all">
+<div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-container mb-space-md shadow-sm">
+<span class="material-symbols-outlined text-[26px]">bar_chart</span>
+</div>
+<h3 class="font-headline-sm text-headline-md text-on-surface font-bold mb-space-xs">
+            Objective Recruiter Pipeline
+          </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            Recruiters instantly see applicants sorted in descending order of true technical compatibility with zero manual resume scanning.
+          </p>
+</div>
+<div class="mt-space-lg pt-space-md flex items-center justify-between">
+<span class="text-xs font-bold text-primary-container">Zero Keyword Manipulation</span>
+<span class="material-symbols-outlined text-outline text-[16px]">arrow_forward</span>
+</div>
+</div>
+</div>
+</section>
+<!-- HIGH-CONVERSION CTA BANNER -->
+<section class="w-full py-space-xl px-margin">
+<div class="max-w-6xl mx-auto rounded-xl bg-gradient-to-r from-primary-container via-surface-tint to-primary text-on-primary p-space-xl sm:p-16 text-center relative overflow-hidden shadow-xl">
+<!-- Decorative background rings -->
+<div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+<div class="absolute -left-16 -bottom-16 w-80 h-80 rounded-full bg-primary-fixed-dim/20 blur-2xl pointer-events-none"></div>
+<div class="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
+<h2 class="font-display-lg text-display-lg sm:text-[44px] sm:leading-[52px] font-bold text-on-primary mb-space-sm">
+          Ready for Smarter Tech Hiring?
+        </h2>
+<p class="font-body-lg text-body-lg text-primary-fixed font-normal mb-space-xl opacity-90">
+          Join candidates getting matched to jobs they actually qualify for, and companies hiring engineers based on proof.
+        </p>
+<div class="flex flex-wrap items-center justify-center gap-space-md w-full">
+<a class="inline-flex items-center justify-center h-12 px-8 rounded-xl font-label-lg text-label-lg bg-surface-container-lowest text-primary-container hover:bg-surface-container-low shadow-md transition-all font-bold" data-path="register-candidate" href="register.html?role=candidate">
+            Create Candidate Profile
+          </a>
+<a class="inline-flex items-center justify-center h-12 px-8 rounded-xl font-label-lg text-label-lg bg-white/15 text-on-primary hover:bg-white/25 backdrop-blur-md shadow-sm transition-all font-semibold" data-path="post-job" href="register.html?role=recruiter">
+            Post a Job Posting
+          </a>
+</div>
+</div>
+</div>
+</section>
+<!-- SUB-FOOTER STATUS STRIP -->
+<section class="w-full px-margin py-space-md bg-surface-container-lowest">
+<div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="text-primary-container font-bold text-sm">⚡ SkillBridge</span>
+<span class="text-on-surface-variant text-xs">— Skill-to-Job Matching System</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low text-tertiary-container font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary-container animate-ping"></span>
+        Algorithm &amp; Matching Engine Active
+      </div>
+<div class="text-xs text-on-surface-variant">
+        © 2026 SkillBridge Platform. All rights reserved.
+      </div>
+</div>
+</section>
+</div>
+<script>
+  (function() {
+    // Interactive Skill Matrix Simulator
+    const skills = {
+      python: { active: true, req: true, weight: 25.0, label: 'Python' },
+      fastapi: { active: true, req: true, weight: 25.0, label: 'FastAPI' },
+      react: { active: false, req: true, weight: 25.0, label: 'React' },
+      docker: { active: true, req: false, weight: 12.5, label: 'Docker' },
+      postgres: { active: false, req: false, weight: 12.5, label: 'Postgres' }
+    };
 
-    <script>
-        // Interactive Hero Simulator Logic
-        const jobDefinition = {
-            required: ['Python', 'FastAPI', 'React'],
-            preferred: ['Docker', 'Postgres']
-        };
+    const container = document.getElementById('skills-toggle-group');
+    const scoreText = document.getElementById('demo-score-text');
+    const scoreBar = document.getElementById('demo-score-bar');
+    const verifiedList = document.getElementById('verified-matches-list');
+    const gapsList = document.getElementById('critical-gaps-list');
 
-        let selectedSkills = new Set(['Python', 'FastAPI', 'Docker']);
+    function calculateScore() {
+      let score = 0;
+      let matchedReqCount = 0;
+      let matchedPrefCount = 0;
 
-        function toggleDemoSkill(btn) {
-            const skill = btn.getAttribute('data-skill');
-            if (selectedSkills.has(skill)) {
-                selectedSkills.delete(skill);
-                btn.classList.remove('selected');
-                btn.textContent = `+ ${skill} (${btn.getAttribute('data-type') === 'req' ? 'Req' : 'Pref'})`;
-            } else {
-                selectedSkills.add(skill);
-                btn.classList.add('selected');
-                btn.textContent = `✓ ${skill} (${btn.getAttribute('data-type') === 'req' ? 'Req' : 'Pref'})`;
-            }
-            recalculateDemo();
+      // 75% for 3 required skills (25% each)
+      // 25% for 2 preferred skills (12.5% each)
+      if (skills.python.active) score += 25.0;
+      if (skills.fastapi.active) score += 25.0;
+      if (skills.react.active) score += 25.0;
+      if (skills.docker.active) score += 12.5;
+      if (skills.postgres.active) score += 12.5;
+
+      return Math.round(score * 10) / 10;
+    }
+
+    function renderState() {
+      const score = calculateScore();
+      scoreText.textContent = score.toFixed(1) + '%';
+      scoreBar.style.width = score + '%';
+
+      // Rebuild pills
+      const buttons = container.querySelectorAll('button[data-skill]');
+      buttons.forEach(btn => {
+        const id = btn.getAttribute('data-skill');
+        const item = skills[id];
+        const icon = btn.querySelector('.status-icon');
+        const badge = btn.querySelector('span:last-child');
+
+        if (item.active) {
+          if (item.req) {
+            btn.className = 'skill-pill active inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm bg-primary-container text-on-primary shadow-sm hover:opacity-95 transition-all';
+            badge.className = 'text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 uppercase font-semibold';
+          } else {
+            btn.className = 'skill-pill active inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container-highest text-primary font-semibold shadow-sm hover:opacity-95 transition-all';
+            badge.className = 'text-[10px] px-1.5 py-0.2 rounded-full bg-primary/10 text-primary uppercase font-semibold';
+          }
+          icon.textContent = 'check';
+        } else {
+          btn.className = 'skill-pill inactive inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container-lowest text-on-surface-variant shadow-sm hover:bg-surface-container-high transition-all';
+          badge.className = 'text-[10px] px-1.5 py-0.2 rounded-full bg-surface-container-high text-on-surface-variant uppercase font-semibold';
+          icon.textContent = 'add';
         }
+      });
 
-        function recalculateDemo() {
-            let matchedReq = 0;
-            let totalReq = jobDefinition.required.length;
-            let matchedPref = 0;
-            let totalPref = jobDefinition.preferred.length;
-
-            const matchedList = [];
-            const gapList = [];
-            const bonusList = [];
-
-            jobDefinition.required.forEach(skill => {
-                if (selectedSkills.has(skill)) {
-                    matchedReq++;
-                    matchedList.push(skill);
-                } else {
-                    gapList.push(skill);
-                }
-            });
-
-            jobDefinition.preferred.forEach(skill => {
-                if (selectedSkills.has(skill)) {
-                    matchedPref++;
-                    bonusList.push(skill);
-                }
-            });
-
-            const reqScore = totalReq > 0 ? (matchedReq / totalReq) : 1;
-            const prefScore = totalPref > 0 ? (matchedPref / totalPref) : 1;
-
-            // Algorithm: 75% Required + 25% Preferred
-            const finalScore = ((0.75 * reqScore) + (0.25 * prefScore)) * 100;
-            const roundedScore = Math.round(finalScore * 10) / 10;
-
-            const scoreDisplay = document.getElementById('demoScoreDisplay');
-            scoreDisplay.textContent = `${roundedScore}%`;
-
-            if (roundedScore >= 75) {
-                scoreDisplay.style.color = 'var(--success)';
-            } else if (roundedScore >= 45) {
-                scoreDisplay.style.color = 'var(--info)';
-            } else {
-                scoreDisplay.style.color = 'var(--warning)';
-            }
-
-            // Render tags
-            const matchedContainer = document.getElementById('demoMatchedTags');
-            matchedContainer.innerHTML = [
-                ...matchedList.map(s => `<span class="badge badge-green">✓ ${s} (Req)</span>`),
-                ...bonusList.map(s => `<span class="badge badge-blue">★ ${s} (Bonus)</span>`)
-            ].join('') || '<span style="color:var(--text-muted); font-size:0.85rem;">None</span>';
-
-            const gapContainer = document.getElementById('demoGapTags');
-            gapContainer.innerHTML = gapList.map(s => `<span class="badge badge-red">✗ ${s} (Missing Required)</span>`).join('') || '<span class="badge badge-green">Zero critical gaps!</span>';
+      // Update Verified list
+      verifiedList.innerHTML = '';
+      let anyMatched = false;
+      Object.keys(skills).forEach(id => {
+        const item = skills[id];
+        if (item.active) {
+          anyMatched = true;
+          const span = document.createElement('span');
+          if (item.req) {
+            span.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-tertiary-fixed text-tertiary shadow-sm';
+            span.innerHTML = '<span class="material-symbols-outlined text-[14px]">check</span> ' + item.label;
+          } else {
+            span.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-secondary-fixed text-on-secondary-fixed shadow-sm';
+            span.innerHTML = '<span class="material-symbols-outlined text-[14px]">star</span> ' + item.label;
+          }
+          verifiedList.appendChild(span);
         }
-    </script>
+      });
 
-    <!-- Scroll-Reveal Observer -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const revealElements = document.querySelectorAll('.reveal');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-            revealElements.forEach(el => observer.observe(el));
-        });
+      if (!anyMatched) {
+        verifiedList.innerHTML = '<span class="text-xs text-on-surface-variant italic">No verified skills toggled</span>';
+      }
 
-        // Mobile Drawer Controller
-        function toggleMobileMenu() {
-            const nav = document.getElementById('mainNav');
-            const toggle = document.getElementById('mobileMenuToggle');
-            const isOpen = nav.classList.toggle('open');
-            toggle.classList.toggle('active', isOpen);
-            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            document.body.classList.toggle('menu-open', isOpen);
+      // Update Critical Gaps list
+      gapsList.innerHTML = '';
+      let hasReqGap = false;
+      Object.keys(skills).forEach(id => {
+        const item = skills[id];
+        if (!item.active && item.req) {
+          hasReqGap = true;
+          const span = document.createElement('span');
+          span.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-error-container text-on-error-container shadow-sm';
+          span.innerHTML = '<span class="material-symbols-outlined text-[14px]">close</span> ' + item.label + ' (Missing Required)';
+          gapsList.appendChild(span);
         }
+      });
 
-        function closeMobileMenu() {
-            const nav = document.getElementById('mainNav');
-            const toggle = document.getElementById('mobileMenuToggle');
-            if (nav) nav.classList.remove('open');
-            if (toggle) {
-                toggle.classList.remove('active');
-                toggle.setAttribute('aria-expanded', 'false');
-            }
-            document.body.classList.remove('menu-open');
-        }
+      if (!hasReqGap) {
+        gapsList.innerHTML = '<span class="inline-flex items-center gap-1 text-xs font-bold text-tertiary-container"><span class="material-symbols-outlined text-[16px]">check_circle</span> All mandatory requirements met! 100% of core role verified.</span>';
+      } else {
+        const hint = document.createElement('span');
+        hint.className = 'text-xs text-on-surface-variant italic';
+        hint.textContent = 'Suggest: Complete verified technical assessment to close score deficit';
+        gapsList.appendChild(hint);
+      }
+    }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeMobileMenu();
-        });
-    </script>
-</body>
-</html>
+    container.addEventListener('click', function(e) {
+      const btn = e.target.closest('button[data-skill]');
+      if (!btn) return;
+      const skillId = btn.getAttribute('data-skill');
+      if (skills[skillId]) {
+        skills[skillId].active = !skills[skillId].active;
+        renderState();
+      }
+    });
+  })();
+</script></main><footer class="w-full bg-surface-container-low py-space-xl"><div class="w-full px-margin"><div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-space-lg pb-space-lg"><div class="flex flex-col gap-space-xs"><div class="flex items-center gap-space-sm"><div class="w-7 h-7 rounded-xl bg-primary-container flex items-center justify-center text-on-primary"><span class="material-symbols-outlined text-[16px]">verified_user</span></div><span class="font-headline-sm text-headline-sm text-on-surface font-bold">SkillBridge</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Enterprise talent intelligence, verifiable skill graphs, and bias-mitigated competency evaluation.</p></div><div class="flex flex-wrap items-center gap-space-lg"><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="privacy-framework" href="#">Privacy Framework</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="assessment-standards" href="#">Assessment Standards</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="documentation" href="#">Documentation</a><a class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="contact" href="#">Contact</a></div></div><div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md pt-space-lg"><div class="flex items-center gap-space-md"><span class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-surface-container-lowest text-tertiary-container font-label-sm text-label-sm shadow-[0_1px_3px_0_rgba(15,23,42,0.04)]"><span class="material-symbols-outlined text-[14px] text-tertiary-container">check_circle</span>Algorithm v4.2 Active</span><span class="font-body-sm text-body-sm text-on-surface-variant">SOC2 Type II &amp; ISO 27001 Certified Enterprise Architecture</span></div><div class="font-body-sm text-body-sm text-on-surface-variant">© 2026 SkillBridge Inc. All rights reserved.</div></div></div></footer></body></html>
