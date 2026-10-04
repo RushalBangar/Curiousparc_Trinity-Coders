@@ -28,7 +28,7 @@ SkillBridge is built on a decoupled, service-oriented architecture prioritizing 
 ```mermaid
 flowchart TD
     subgraph Client["Frontend Client (Vanilla Web Standards)"]
-        UI["Modern UI / Responsive Views\n(HTML5, CSS3, ES6 Modules)"]
+        UI["Modern UI / Responsive Views\n(HTML5, Tailwind CSS, ES6 Modules)"]
         APIClient["API Client & Interceptor\n(Native Fetch + Bearer JWT)"]
         ToastMgr["Toast & UI Feedback Service"]
     end
@@ -66,7 +66,7 @@ flowchart TD
 ## Core Components
 
 ### 1. Frontend Presentation Layer
-- **Technology**: Vanilla HTML5, Modern CSS3 with custom properties (CSS variables), and Modular Vanilla JavaScript (ES6+).
+- **Technology**: Vanilla HTML5, Tailwind CSS via CDN, and Modular Vanilla JavaScript (ES6+).
 - **Design Philosophy**: Zero bundler complexity, blazing-fast asset delivery, no framework overhead.
 - **Key Modules**:
   - `api.js`: Centralized singleton `ApiClient` wrapping the browser's `fetch()` API. It automatically attaches Bearer tokens, handles global error interception, triggers 401 automatic session cleanup, and integrates non-blocking Toast alerts.

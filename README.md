@@ -5,7 +5,7 @@
 [![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%2015-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
-[![Frontend](https://img.shields.io/badge/Frontend-HTML5%20%7C%20CSS3%20%7C%20ES6%2B-E34F26?logo=html5&logoColor=white)](frontend/)
+[![Frontend](https://img.shields.io/badge/Frontend-HTML5%20%7C%20TailwindCSS%20%7C%20ES6%2B-38B2AC?logo=tailwindcss&logoColor=white)](frontend/)
 [![Architecture](https://img.shields.io/badge/Architecture-RESTful%20Client--Server-6366F1)](docs/ARCHITECTURE.md)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
@@ -85,7 +85,7 @@ Traditional hiring platforms and job boards rely on keyword-heavy resume screeni
 - **FastAPI Core**: Asynchronous Python backend delivering sub-millisecond execution times and auto-generated Swagger documentation.
 - **Supabase Authentication & Google OAuth**: Seamless login via email/password or Google Single Sign-On (SSO).
 - **PostgreSQL Row Level Security (RLS)**: Enforces access control at the database layer.
-- **Zero-Build Lightweight Frontend**: Built with pure HTML5, CSS3, and ES6+ JavaScript—blazing fast, accessible, and responsive.
+- **Zero-Build Lightweight Frontend**: Built with HTML5, Tailwind CSS (via CDN), and ES6+ JavaScript—blazing fast, accessible, and features a premium modern aesthetic.
 
 ---
 
@@ -130,7 +130,7 @@ For every candidate-job evaluation, skills are categorized into three distinct v
 ```mermaid
 flowchart TD
     subgraph Client["Frontend Client (Vanilla Web Standards)"]
-        UI["Modern UI / Responsive Views\n(HTML5, CSS3, ES6 Modules)"]
+        UI["Modern UI / Responsive Views\n(HTML5, Tailwind CSS, ES6 Modules)"]
         APIClient["API Client & Interceptor\n(Native Fetch + Bearer JWT)"]
         ToastMgr["Toast Notification Service"]
     end
@@ -168,7 +168,7 @@ flowchart TD
 
 | Layer | Technology | Key Capabilities & Justification |
 | :--- | :--- | :--- |
-| **Frontend UI** | HTML5, CSS3, ES6+ JavaScript | Zero build tool complexity, modular architecture, instant load times, native Fetch API integration. |
+| **Frontend UI** | HTML5, Tailwind CSS, ES6+ JavaScript | Premium utility-first styling, zero build tool complexity (CDN), modular architecture, instant load times, native Fetch API integration. |
 | **Backend API** | Python 3.10+, FastAPI, Uvicorn | High asynchronous throughput, automatic OpenAPI documentation, strict Pydantic v2 data validation. |
 | **Database** | PostgreSQL 15 (Supabase) | ACID compliance, relational integrity with cascading deletes, high performance indexing, pgvector readiness. |
 | **Authentication** | Supabase Auth (GoTrue) | Built-in JWT lifecycle, password hashing, and Google OAuth 2.0 social sign-on. |

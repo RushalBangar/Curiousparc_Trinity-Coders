@@ -1,4 +1,4 @@
-﻿SkillBridge: Skill-to-Job Matching Platform
+SkillBridge: Skill-to-Job Matching Platform
 Technical Architecture & Project Specification Document
 1. Project Overview & Executive Summary
 1.1 Problem Statement
@@ -22,7 +22,7 @@ Key outcomes delivered by SkillBridge:
 The system follows a decoupled Client-Server RESTful Architecture:
 
 
-* Frontend Client: Lightweight, responsive Single-Page Interface built with vanilla web standards (HTML5, CSS3, ES6+ JavaScript) using native Fetch API.
+* Frontend Client: Lightweight, responsive Single-Page Interface built with vanilla web standards (HTML5, Tailwind CSS, ES6+ JavaScript) using native Fetch API.
 * Backend Service: High-performance Python backend powered by FastAPI, leveraging Pydantic for request/response validation and Uvicorn as the ASGI server.
 * Database & Identity: Supabase (PostgreSQL), providing relational integrity, Row Level Security (RLS), Supabase Auth for JWT session management, and Supabase Storage for assets.
 2.2 Tech Stack Selection Matrix
@@ -30,7 +30,7 @@ Component
 	Selected Technology
 	Rationale & Justification
 	Frontend
-	HTML5, CSS3, Vanilla JS (ES6+)
+	HTML5, Tailwind CSS, Vanilla JS (ES6+)
 	Rapid load times, zero build tool complexity, modular JavaScript modules, native Fetch API integration.
 	Backend
 	Python (FastAPI)
@@ -337,6 +337,6 @@ Set up FastAPI project with Pydantic models, Supabase Auth verification, profile
    3. Phase 3 - Matching Engine & Gap Analyzer:
 Implement mathematical scoring service, unit test edge cases (zero skills, full match, partial match), and build gap analysis payload.
    4. Phase 4 - Frontend Development:
-Build responsive HTML5/CSS3 templates, write modular vanilla JS controllers, integrate API client with local JWT storage, and build real-time match meters.
+Build responsive HTML5/Tailwind CSS templates, write modular vanilla JS controllers, integrate API client with local JWT storage, and build real-time match meters.
    5. Phase 5 - Verification, Testing & Deployment:
 End-to-end integration testing, secure environment configuration, backend hosting (Render / Railway), and frontend hosting.
