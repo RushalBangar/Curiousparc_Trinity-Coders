@@ -801,15 +801,17 @@ textarea:focus {
 
 .consent-box {
     background: var(--bg-surface);
-    padding: 0.85rem 1rem;
+    padding: 0.85rem 1.15rem;
     border-radius: var(--radius-md);
     border: 1.5px solid var(--border-strong);
     display: flex;
-    align-items: flex-start;
-    gap: 1rem;
+    align-items: center;
+    gap: 0.85rem;
     margin-bottom: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .consent-box:hover {
@@ -819,11 +821,12 @@ textarea:focus {
 }
 
 .consent-box input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     accent-color: var(--primary-600);
-    margin-top: 0.15rem;
+    margin: 0;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
 .proctor-modal-dialog {
