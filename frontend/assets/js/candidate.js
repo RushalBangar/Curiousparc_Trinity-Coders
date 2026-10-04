@@ -663,6 +663,7 @@ async function loadMyApplications() {
         const container = document.getElementById('applicationsContainer');
         
         if (!apps || apps.length === 0) {
+            document.getElementById('statAvgScore').textContent = '--%';
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">📋</div>
@@ -673,6 +674,13 @@ async function loadMyApplications() {
             `;
             return;
         }
+
+        let totalMatch = 0;
+        apps.forEach(app => {
+            totalMatch += app.match_score || 0;
+        });
+        const avgMatch = Math.round(totalMatch / apps.length);
+        document.getElementById('statAvgScore').textContent = `${avgMatch}%`;
 
         container.innerHTML = apps.map(app => `
             <div class="job-card">
@@ -722,7 +730,7 @@ async function handleResumeUpload(event) {
         const response = await fetch(`${window.ApiClient.baseURL}/resumes/parse`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${window.Auth.getToken()}`
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             },
             body: formData
         });
