@@ -35,6 +35,7 @@ class SkillMatchDetail(BaseModel):
     skill: Skill
     is_required: bool
     weight: float
+    is_partial: bool = False
 
 class GapAnalysisResult(BaseModel):
     job_id: UUID

@@ -3,6 +3,22 @@ from uuid import UUID
 from app.models.match import GapAnalysisResult, SkillMatchDetail
 from app.models.user import Skill
 
+SEMANTIC_EQUIVALENCIES = {
+    "fastapi": ["flask", "django"],
+    "react": ["vue.js", "angular", "svelte", "solidjs"],
+    "vue.js": ["react", "angular", "svelte"],
+    "postgresql": ["mysql", "mariadb", "oracle", "sql server", "sqlite"],
+    "mysql": ["postgresql", "mariadb", "oracle"],
+    "docker": ["podman"],
+    "kubernetes": ["docker swarm", "nomad", "mesos"],
+    "node.js": ["deno", "bun"],
+    "typescript": ["javascript"],
+    "javascript": ["typescript"],
+    "aws": ["gcp", "azure", "google cloud platform"],
+    "gcp": ["aws", "azure", "google cloud platform"],
+    "azure": ["aws", "gcp", "google cloud platform"]
+}
+
 def calculate_match_and_gap_analysis(
     job_id: UUID,
     candidate_id: UUID,
@@ -19,6 +35,7 @@ def calculate_match_and_gap_analysis(
     
     # Extract candidate skills into a dictionary for O(1) lookup and attribute access
     candidate_skills_dict = {str(cs["skill_id"]): cs for cs in candidate_skills}
+    candidate_skill_names_lower = {cs.get("skills", {}).get("name", "").lower(): cs for cs in candidate_skills if cs.get("skills")}
     
     matched_skills = []
     critical_skill_gaps = []
@@ -68,7 +85,31 @@ def calculate_match_and_gap_analysis(
                 matched_req_weights += (weight * multiplier)
                 matched_skills.append(skill_detail)
             else:
-                critical_skill_gaps.append(skill_detail)
+                req_name_lower = skill_data.get("name", "").lower()
+                partial_match_found = False
+                
+                if req_name_lower in SEMANTIC_EQUIVALENCIES:
+                    for equiv in SEMANTIC_EQUIVALENCIES[req_name_lower]:
+                        if equiv in candidate_skill_names_lower:
+                            partial_match_found = True
+                            cand_skill = candidate_skill_names_lower[equiv]
+                            
+                            base_multiplier = 0.5
+                            if cand_skill.get("quiz_score") is not None:
+                                base_multiplier = float(cand_skill["quiz_score"]) / 100.0
+                            elif cand_skill.get("proficiency_level"):
+                                base_multiplier = prof_multiplier.get(cand_skill["proficiency_level"].lower(), 0.5)
+                            
+                            # Award 75% of base multiplier for semantically similar skill
+                            partial_match_multiplier = base_multiplier * 0.75
+                            matched_req_weights += (weight * partial_match_multiplier)
+                            
+                            skill_detail.is_partial = True
+                            matched_skills.append(skill_detail)
+                            break
+                            
+                if not partial_match_found:
+                    critical_skill_gaps.append(skill_detail)
         else:
             has_preferred = True
             total_pref_weights += weight
@@ -83,6 +124,25 @@ def calculate_match_and_gap_analysis(
                     
                 matched_pref_weights += (weight * multiplier)
                 bonus_competencies.append(skill_detail)
+            else:
+                req_name_lower = skill_data.get("name", "").lower()
+                if req_name_lower in SEMANTIC_EQUIVALENCIES:
+                    for equiv in SEMANTIC_EQUIVALENCIES[req_name_lower]:
+                        if equiv in candidate_skill_names_lower:
+                            cand_skill = candidate_skill_names_lower[equiv]
+                            
+                            base_multiplier = 0.5
+                            if cand_skill.get("quiz_score") is not None:
+                                base_multiplier = float(cand_skill["quiz_score"]) / 100.0
+                            elif cand_skill.get("proficiency_level"):
+                                base_multiplier = prof_multiplier.get(cand_skill["proficiency_level"].lower(), 0.5)
+                            
+                            partial_match_multiplier = base_multiplier * 0.75
+                            matched_pref_weights += (weight * partial_match_multiplier)
+                            
+                            skill_detail.is_partial = True
+                            bonus_competencies.append(skill_detail)
+                            break
                 
     # Algorithmic Formulation
     weight_req_factor = 0.75

@@ -127,7 +127,7 @@ def get_job_detail(
         
         if profile_res.data.get("role") == "seeker":
             # Fetch candidate skills
-            cand_skills_res = supabase.table("candidate_skills").select("skill_id, proficiency_level, quiz_score").eq("candidate_id", current_user.id).execute()
+            cand_skills_res = supabase.table("candidate_skills").select("skill_id, proficiency_level, quiz_score, skills(name, category)").eq("candidate_id", current_user.id).execute()
             
             gap_analysis = calculate_match_and_gap_analysis(
                 job_id=job_id,
@@ -162,7 +162,7 @@ def apply_for_job(
         job_requirements = job_res.data.get("job_skills", [])
         
         # Fetch candidate skills
-        cand_skills_res = supabase.table("candidate_skills").select("skill_id, proficiency_level, quiz_score").eq("candidate_id", current_user.id).execute()
+        cand_skills_res = supabase.table("candidate_skills").select("skill_id, proficiency_level, quiz_score, skills(name, category)").eq("candidate_id", current_user.id).execute()
         
         # Calculate match
         gap_analysis = calculate_match_and_gap_analysis(
