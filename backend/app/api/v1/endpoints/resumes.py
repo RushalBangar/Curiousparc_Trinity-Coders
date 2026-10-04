@@ -1,6 +1,7 @@
+from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from app.api.dependencies import get_current_user, get_supabase_client
-from app.models.user import User
+from app.core.security import get_current_user
+from app.core.database import get_supabase_client
 import pdfplumber
 import io
 import re
@@ -10,13 +11,14 @@ router = APIRouter()
 @router.post("/parse")
 async def parse_resume(
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: Any = Depends(get_current_user),
     supabase = Depends(get_supabase_client)
 ):
     """
     Parses a PDF resume to extract skills using NLP/Regex matching against the SkillBridge taxonomy.
     """
-    if current_user.role != "seeker":
+    profile_res = supabase.table("profiles").select("role").eq("id", current_user.id).single().execute()
+    if profile_res.data.get("role") != "seeker":
         raise HTTPException(status_code=403, detail="Only candidates can parse resumes")
         
     if not file.filename.lower().endswith(".pdf"):
