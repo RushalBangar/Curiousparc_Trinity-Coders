@@ -69,6 +69,7 @@ CREATE TABLE applications (
     candidate_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
     match_score NUMERIC(5, 2), -- recorded compatibility percentage
     status TEXT CHECK (status IN ('applied', 'reviewing', 'shortlisted', 'rejected')) DEFAULT 'applied',
+    learning_commitment TEXT, -- plan to bridge gap
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (job_id, candidate_id)
 );

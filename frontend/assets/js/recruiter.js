@@ -128,26 +128,37 @@ async function viewApplicants(jobId, jobTitleEncoded) {
                     const applicantName = app.profiles ? escapeHTML(app.profiles.full_name) : 'Candidate';
                     const applicantEmail = app.profiles ? escapeHTML(app.profiles.email) : 'hidden@skillbridge.io';
 
+                    let commitmentHtml = '';
+                    if (app.learning_commitment) {
+                        commitmentHtml = `
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: var(--bg-muted); border-left: 3px solid var(--info); border-radius: var(--radius-sm); font-size: 0.85rem;">
+                            <strong>Learning Commitment:</strong> <span style="color: var(--text-secondary);">${escapeHTML(app.learning_commitment)}</span>
+                        </div>`;
+                    }
+
                     return `
-                        <div class="candidate-row-card">
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <div class="candidate-rank ${rankClass}">${rankLabel}</div>
-                                <div>
-                                    <h4 style="font-size: 1.05rem; margin-bottom: 0.15rem; color: var(--text-primary);">${applicantName}</h4>
-                                    <p style="font-size: 0.85rem; color: var(--text-muted);">${applicantEmail}</p>
+                        <div class="candidate-row-card" style="flex-direction: column; align-items: stretch; gap: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div class="candidate-rank ${rankClass}">${rankLabel}</div>
+                                    <div>
+                                        <h4 style="font-size: 1.05rem; margin-bottom: 0.15rem; color: var(--text-primary);">${applicantName}</h4>
+                                        <p style="font-size: 0.85rem; color: var(--text-muted);">${applicantEmail}</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div class="score-badge ${scoreClass}">
+                                        ⚡ ${score}% Match
+                                    </div>
+                                    <select onchange="updateApplicationStatus('${jobId}', '${app.candidate_id}', this.value, '${jobTitleEncoded}')" style="padding: 0.35rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem; color: var(--text-primary); cursor: pointer; text-transform: capitalize;">
+                                        <option value="applied" ${app.status === 'applied' ? 'selected' : ''}>Applied</option>
+                                        <option value="reviewing" ${app.status === 'reviewing' ? 'selected' : ''}>Reviewing</option>
+                                        <option value="shortlisted" ${app.status === 'shortlisted' ? 'selected' : ''}>Shortlisted</option>
+                                        <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <div class="score-badge ${scoreClass}">
-                                    ⚡ ${score}% Match
-                                </div>
-                                <select onchange="updateApplicationStatus('${jobId}', '${app.candidate_id}', this.value, '${jobTitleEncoded}')" style="padding: 0.35rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: var(--bg-surface); font-size: 0.85rem; color: var(--text-primary); cursor: pointer; text-transform: capitalize;">
-                                    <option value="applied" ${app.status === 'applied' ? 'selected' : ''}>Applied</option>
-                                    <option value="reviewing" ${app.status === 'reviewing' ? 'selected' : ''}>Reviewing</option>
-                                    <option value="shortlisted" ${app.status === 'shortlisted' ? 'selected' : ''}>Shortlisted</option>
-                                    <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
-                                </select>
-                            </div>
+                            ${commitmentHtml}
                         </div>
                     `;
                 }).join('');

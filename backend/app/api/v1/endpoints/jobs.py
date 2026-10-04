@@ -7,7 +7,7 @@ from supabase import Client
 from app.core.database import get_supabase_client
 from app.core.security import get_current_user
 from app.models.job import JobCreate, Job
-from app.models.match import ApplicationUpdate
+from app.models.match import ApplicationUpdate, ApplicationApplyRequest
 from app.services.matcher import calculate_match_and_gap_analysis
 
 logger = logging.getLogger(__name__)
@@ -147,6 +147,7 @@ def get_job_detail(
 @router.post("/{job_id}/apply")
 def apply_for_job(
     job_id: UUID,
+    apply_data: ApplicationApplyRequest = None,
     current_user: Any = Depends(get_current_user),
     supabase: Client = Depends(get_supabase_client)
 ):
@@ -176,13 +177,19 @@ def apply_for_job(
         if existing.data:
             raise HTTPException(status_code=400, detail="You have already applied for this job")
             
+        # Application Capping: Max 5 active applications per user
+        active_apps = supabase.table("applications").select("id", count="exact").eq("candidate_id", str(current_user.id)).neq("status", "rejected").execute()
+        if active_apps.count and active_apps.count >= 5:
+            raise HTTPException(status_code=400, detail="Application limit reached: You can only have 5 active applications at a time.")
+            
         match_score = gap_analysis.match_score_percentage
         
         payload = {
             "job_id": str(job_id),
             "candidate_id": current_user.id,
             "match_score": match_score,
-            "status": "applied"
+            "status": "applied",
+            "learning_commitment": apply_data.learning_commitment if apply_data else None
         }
         
         response = supabase.table("applications").insert(payload).execute()

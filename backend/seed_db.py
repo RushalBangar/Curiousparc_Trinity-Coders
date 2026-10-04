@@ -122,8 +122,8 @@ else:
 print("Assigning skills to jobs...")
 job_skills_data = []
 
-# Map skill names to IDs
-skill_map = {s["name"]: s["id"] for s in all_skills}
+# Map skill names (lowercased) to IDs
+skill_map = {s["name"].lower(): s["id"] for s in all_skills}
 
 job_requirements = {
     "Senior Full Stack Engineer": ["JavaScript", "TypeScript", "React", "Node.js", "PostgreSQL", "AWS"],
@@ -135,10 +135,11 @@ job_requirements = {
 for job in inserted_jobs:
     req_skills = job_requirements.get(job["title"], [])
     for skill_name in req_skills:
-        if skill_name in skill_map:
+        skill_name_lower = skill_name.lower()
+        if skill_name_lower in skill_map:
             job_skills_data.append({
                 "job_id": job["id"],
-                "skill_id": skill_map[skill_name],
+                "skill_id": skill_map[skill_name_lower],
                 "is_required": random.choice([True, True, False]), # 66% mandatory
                 "weight": round(random.uniform(1.0, 1.8), 2)
             })

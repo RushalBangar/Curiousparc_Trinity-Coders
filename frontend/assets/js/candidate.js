@@ -135,6 +135,17 @@ async function viewJobDetail(jobId) {
             window.MatchingUI.renderGapAnalysis(jobDetail.gap_analysis, gapContainer);
         }
 
+        const commitmentSection = document.getElementById('learningCommitmentSection');
+        const commitmentText = document.getElementById('learningCommitmentText');
+        if (commitmentSection && commitmentText) {
+            commitmentText.value = '';
+            if (jobDetail.gap_analysis && jobDetail.gap_analysis.critical_skill_gaps && jobDetail.gap_analysis.critical_skill_gaps.length > 0) {
+                commitmentSection.style.display = 'block';
+            } else {
+                commitmentSection.style.display = 'none';
+            }
+        }
+
         modal.style.display = 'flex';
     } catch (error) {
         window.Toast.error(error.message || "Failed to load job analysis.", "Error");
@@ -149,8 +160,14 @@ async function applyForJob() {
     btn.innerHTML = 'Submitting...';
     btn.disabled = true;
 
+    const commitmentText = document.getElementById('learningCommitmentText');
+    const payload = {};
+    if (commitmentText && commitmentText.value.trim() !== '' && document.getElementById('learningCommitmentSection').style.display !== 'none') {
+        payload.learning_commitment = commitmentText.value.trim();
+    }
+
     try {
-        await window.ApiClient.post(`/jobs/${currentJobId}/apply`, {});
+        await window.ApiClient.post(`/jobs/${currentJobId}/apply`, payload);
         window.Toast.success('Application submitted with verified score lock!', 'Success');
         document.getElementById('jobDetailModal').style.display = 'none';
         

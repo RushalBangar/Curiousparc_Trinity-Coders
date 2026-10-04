@@ -12,6 +12,10 @@ class ApplicationBase(BaseModel):
 class ApplicationCreate(ApplicationBase):
     pass
 
+class ApplicationApplyRequest(BaseModel):
+    learning_commitment: Optional[str] = None
+
+
 class ApplicationUpdate(BaseModel):
     status: str = Field(..., pattern="^(applied|reviewing|shortlisted|rejected)$")
 
