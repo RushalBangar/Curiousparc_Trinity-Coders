@@ -3,16 +3,16 @@
    Modern, High-Contrast, Glassmorphism-Infused CSS
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
     /* Color Palette */
-    --primary-600: #4f46e5;
-    --primary-700: #4338ca;
-    --primary-500: #6366f1;
-    --primary-400: #818cf8;
-    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
-    --primary-gradient-subtle: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(124, 58, 237, 0.08) 100%);
+    --primary-600: #2a14b4;
+    --primary-700: #100069;
+    --primary-500: #372abf;
+    --primary-400: #4338ca;
+    --primary-gradient: linear-gradient(135deg, #2a14b4 0%, #4338ca 100%);
+    --primary-gradient-subtle: linear-gradient(135deg, rgba(42, 20, 180, 0.08) 0%, rgba(67, 56, 202, 0.08) 100%);
     
     --success: #10b981;
     --success-bg: #ecfdf5;
@@ -22,8 +22,8 @@
     --warning-bg: #fffbeb;
     --warning-border: #fde68a;
     
-    --danger: #ef4444;
-    --danger-bg: #fef2f2;
+    --danger: #ba1a1a;
+    --danger-bg: #ffdad6;
     --danger-border: #fecaca;
     
     --info: #3b82f6;
@@ -31,37 +31,37 @@
     --info-border: #bfdbfe;
     
     /* Neutrals & Surfaces */
-    --bg-base: #f8fafc;
+    --bg-base: #f8f9ff;
     --bg-surface: #ffffff;
     --bg-surface-elevated: #ffffff;
-    --bg-muted: #f1f5f9;
+    --bg-muted: #e5eeff;
     --bg-glass: rgba(255, 255, 255, 0.85);
     
     /* Borders */
-    --border-subtle: #e2e8f0;
-    --border-strong: #cbd5e1;
+    --border-subtle: #d3e4fe;
+    --border-strong: #c7c4d7;
     --border-glass: rgba(255, 255, 255, 0.4);
     
     /* Typography */
-    --text-primary: #0f172a;
-    --text-secondary: #334155;
-    --text-muted: #475569;
+    --text-primary: #0b1c30;
+    --text-secondary: #464554;
+    --text-muted: #586377;
     --text-inverse: #ffffff;
     
     /* Shadows */
     --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-    --shadow-sm: 0 2px 4px 0 rgba(15, 23, 42, 0.06);
-    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-    --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
-    --shadow-xl: 0 20px 32px -8px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
-    --shadow-glow: 0 0 20px -2px rgba(99, 102, 241, 0.35);
-    --shadow-colored: 0 10px 30px -5px rgba(79, 70, 229, 0.2);
+    --shadow-sm: 0 2px 4px 0 rgba(11, 28, 48, 0.06);
+    --shadow-md: 0 4px 12px -2px rgba(11, 28, 48, 0.08), 0 2px 6px -1px rgba(11, 28, 48, 0.04);
+    --shadow-lg: 0 12px 24px -4px rgba(11, 28, 48, 0.08), 0 4px 8px -2px rgba(11, 28, 48, 0.04);
+    --shadow-xl: 0 20px 32px -8px rgba(11, 28, 48, 0.12), 0 8px 16px -4px rgba(11, 28, 48, 0.06);
+    --shadow-glow: 0 0 20px -2px rgba(42, 20, 180, 0.35);
+    --shadow-colored: 0 10px 30px -5px rgba(42, 20, 180, 0.2);
     
-    /* Radii */
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
-    --radius-xl: 24px;
+    /* Radii (More Squared/Professional like mockup) */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
     --radius-full: 9999px;
     
     /* Transitions */
@@ -90,7 +90,7 @@ html {
 }
 
 body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background-color: var(--bg-base);
     color: var(--text-primary);
     line-height: 1.6;
