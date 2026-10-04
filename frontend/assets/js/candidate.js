@@ -700,3 +700,68 @@ async function loadMyApplications() {
         console.error("Failed to load applications", error);
     }
 }
+
+async function handleResumeUpload(event) {
+    const fileInput = event.target;
+    if (!fileInput.files || fileInput.files.length === 0) return;
+    
+    const file = fileInput.files[0];
+    if (file.type !== 'application/pdf') {
+        window.Toast.error("Only PDF files are supported.");
+        return;
+    }
+    
+    const statusText = document.getElementById('resumeUploadStatus');
+    statusText.textContent = `Parsing ${file.name}...`;
+    statusText.style.color = 'var(--primary-600)';
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch(`${window.ApiClient.baseURL}/resumes/parse`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${window.Auth.getToken()}`
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.detail || "Failed to parse resume");
+        }
+        
+        statusText.textContent = `Extracted ${data.extracted_skills.length} skills!`;
+        statusText.style.color = 'var(--success)';
+        
+        if (data.extracted_skills && data.extracted_skills.length > 0) {
+            // Auto-add skills to the user's profile
+            let addedCount = 0;
+            for (const skill of data.extracted_skills) {
+                try {
+                    await window.ApiClient.post('/users/me/skills', {
+                        skill_id: skill.id,
+                        proficiency_level: 'intermediate',
+                        years_experience: 1.0
+                    });
+                    addedCount++;
+                } catch (e) {
+                    // Might already exist
+                }
+            }
+            window.Toast.success(`Successfully extracted and added ${addedCount} new skills from your resume!`);
+            await loadMySkills();
+        } else {
+            window.Toast.info("No matching technical skills found in your resume.");
+        }
+    } catch (error) {
+        console.error("Resume parsing error:", error);
+        window.Toast.error(error.message);
+        statusText.textContent = "Upload failed";
+        statusText.style.color = 'var(--danger)';
+    } finally {
+        fileInput.value = '';
+    }
+}

@@ -70,11 +70,16 @@ class MatchingUI {
                     </div>
                     <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">You possess these core prerequisite skills demanded by the employer.</p>
                     <div class="skill-tags">
-                        ${gapAnalysis.matched_skills.map(s => `
-                            <span class="badge badge-green" style="padding: 0.4rem 0.85rem; font-size: 0.825rem;">
+                        ${gapAnalysis.matched_skills.map(s => {
+                            if (s.is_partial) {
+                                return `<span class="badge badge-purple" style="padding: 0.4rem 0.85rem; font-size: 0.825rem;" title="Partial match via semantic equivalency">
+                                    ✓ ${window.escapeHTML(s.skill.name)} (Partial)
+                                </span>`;
+                            }
+                            return `<span class="badge badge-green" style="padding: 0.4rem 0.85rem; font-size: 0.825rem;">
                                 ✓ ${window.escapeHTML(s.skill.name)}
-                            </span>
-                        `).join('')}
+                            </span>`;
+                        }).join('')}
                     </div>
                 </div>
             `;
@@ -127,11 +132,16 @@ class MatchingUI {
                         You have these preferred nice-to-have capabilities which set you apart from other applicants.
                     </p>
                     <div class="skill-tags">
-                        ${gapAnalysis.bonus_competencies.map(s => `
-                            <span class="badge badge-blue" style="padding: 0.4rem 0.85rem; font-size: 0.825rem;">
+                        ${gapAnalysis.bonus_competencies.map(s => {
+                            if (s.is_partial) {
+                                return `<span class="badge badge-purple" style="padding: 0.4rem 0.85rem; font-size: 0.825rem;" title="Partial match via semantic equivalency">
+                                    ★ ${window.escapeHTML(s.skill.name)} (Partial)
+                                </span>`;
+                            }
+                            return `<span class="badge badge-blue" style="padding: 0.4rem 0.85rem; font-size: 0.825rem;">
                                 ★ ${window.escapeHTML(s.skill.name)}
-                            </span>
-                        `).join('')}
+                            </span>`;
+                        }).join('')}
                     </div>
                 </div>
             `;

@@ -122,8 +122,25 @@
                         </div>
                     </div>
                     
+                    <div class="card" style="background: var(--bg-surface); margin-bottom: 2rem; border-left: 4px solid var(--primary-500);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.25rem;">AI Resume Parsing</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-muted);">Upload your PDF resume to automatically extract and tag your skills.</p>
+                            </div>
+                            <span class="badge badge-purple">✨ AI Powered</span>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <input type="file" id="resumeUploadInput" accept="application/pdf" style="display: none;" onchange="handleResumeUpload(event)">
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('resumeUploadInput').click()">
+                                📄 Select PDF Resume
+                            </button>
+                            <span id="resumeUploadStatus" style="font-size: 0.85rem; color: var(--text-muted);">No file selected</span>
+                        </div>
+                    </div>
+
                     <div class="card" style="background: var(--bg-muted); margin-bottom: 2rem; border: 1.5px dashed var(--border-strong);">
-                        <h4 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.05rem;">+ Add New Competency</h4>
+                        <h4 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.05rem;">+ Add New Competency Manually</h4>
                         <form id="addSkillForm">
                             <div class="form-row">
                                 <div class="form-group">
