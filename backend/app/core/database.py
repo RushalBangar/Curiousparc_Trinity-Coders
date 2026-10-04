@@ -1,20 +1,6 @@
-import os
 from supabase import create_client, Client
-from pydantic_settings import BaseSettings
-from functools import lru_cache
+from app.core.config import settings
 
-class Settings(BaseSettings):
-    supabase_url: str = os.getenv("SUPABASE_URL", "")
-    supabase_key: str = os.getenv("SUPABASE_KEY", "")
-    supabase_service_role_key: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
-    jwt_secret: str = os.getenv("JWT_SECRET", "")
-
-    class Config:
-        env_file = ".env"
-
-settings = Settings()
-
-@lru_cache()
 def get_supabase_client() -> Client:
     """
     Returns a Supabase client configured with the anon key.
@@ -24,7 +10,6 @@ def get_supabase_client() -> Client:
         raise ValueError("Supabase URL and Key must be set in the environment variables.")
     return create_client(settings.supabase_url, settings.supabase_key)
 
-@lru_cache()
 def get_supabase_admin_client() -> Client:
     """
     Returns a Supabase client configured with the service role key.

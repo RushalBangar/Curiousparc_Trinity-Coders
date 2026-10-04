@@ -34,7 +34,15 @@ class ApiClient {
                 if (response.status === 401) {
                     localStorage.removeItem('access_token');
                     localStorage.removeItem('user_profile');
-                    window.location.href = 'login.html';
+                    if (window.Toast) {
+                        window.Toast.error("Your session has expired. Redirecting to login...", "Session Expired");
+                    }
+                    setTimeout(() => {
+                        const path = window.location.pathname;
+                        if (!path.endsWith('login.html') && !path.endsWith('index.html')) {
+                            window.location.href = 'login.html';
+                        }
+                    }, 1200);
                 }
                 throw new Error(data?.detail || data?.message || 'API request failed');
             }

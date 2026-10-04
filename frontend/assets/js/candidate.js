@@ -202,13 +202,15 @@ async function loadMySkills() {
 
         container.innerHTML = mySkills.map(ms => {
             const skillName = ms.skill ? ms.skill.name : 'Skill';
+            const safeSkillName = window.escapeHTML(skillName);
+            const jsSafeSkillName = skillName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
             const scoreDisplay = ms.quiz_score !== null && ms.quiz_score !== undefined 
                 ? `<span style="color: var(--success); font-weight: 700; margin-left: 0.35rem;" title="Verified Assessment Score">✓ ${Math.round(ms.quiz_score)}%</span>`
-                : `<button type="button" class="btn-ghost" style="padding: 0.15rem 0.45rem; font-size: 0.75rem; margin-left: 0.4rem; border: 1px solid var(--primary-400); color: var(--primary-600); border-radius: var(--radius-sm);" onclick="startDirectSkillQuiz('${ms.skill_id}', '${skillName}', '${ms.proficiency_level}', ${ms.years_experience})">Verify</button>`;
+                : `<button type="button" class="btn-ghost" style="padding: 0.15rem 0.45rem; font-size: 0.75rem; margin-left: 0.4rem; border: 1px solid var(--primary-400); color: var(--primary-600); border-radius: var(--radius-sm);" onclick="startDirectSkillQuiz('${ms.skill_id}', '${jsSafeSkillName}', '${ms.proficiency_level}', ${ms.years_experience})">Verify</button>`;
             
             return `
             <span class="badge badge-neutral" style="padding: 0.5rem 0.95rem; font-size: 0.85rem; border: 1px solid var(--border-subtle); display: inline-flex; align-items: center;">
-                <strong>${skillName}</strong>
+                <strong>${safeSkillName}</strong>
                 <span style="font-weight: 500; color: var(--text-muted); margin-left: 0.35rem;">
                     • ${ms.proficiency_level} (${ms.years_experience}y)
                 </span>

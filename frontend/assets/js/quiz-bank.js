@@ -604,9 +604,12 @@ const SKILL_ALIASES = {
     "ci/cd": "docker",
     "cicd": "docker",
     "git": "general",
-    "golang": "python",
-    "go": "python",
-    "java": "typescript"
+    "golang": "general",
+    "go": "general",
+    "java": "general",
+    "aws": "general",
+    "k8s": "general",
+    "kubernetes": "general"
 };
 
 /**

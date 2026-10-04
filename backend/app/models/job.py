@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from uuid import UUID
 from .user import Skill
@@ -14,9 +14,7 @@ class JobSkillCreate(JobSkillBase):
 
 class JobSkill(JobSkillBase):
     job_id: UUID
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class JobSkillDetail(JobSkillBase):
     skill: Skill
@@ -43,9 +41,7 @@ class Job(JobBase):
     id: UUID
     recruiter_id: UUID
     created_at: datetime
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class JobDetail(Job):
     skills: List[JobSkillDetail]

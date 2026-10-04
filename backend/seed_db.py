@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 import random
 
+# Seed RNG for deterministic, reproducible mock data
+random.seed(42)
+
 # Load env manually
 env_path = os.path.join(os.path.dirname(__file__), ".env")
 load_dotenv(dotenv_path=env_path)

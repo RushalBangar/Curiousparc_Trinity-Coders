@@ -328,15 +328,33 @@ class QuizProctorEngine {
         document.addEventListener('visibilitychange', this._visibilityHandler);
 
         // Window Focus Loss (Clicking outside or alt-tabbing)
+        this._blurTimeout = null;
         this._blurHandler = () => {
             if (!this.isActive) return;
-            this.triggerCriticalViolation({
-                type: 'window_blur',
-                title: 'Application Focus Lost',
-                message: 'You switched windows or navigated away from the proctored exam workspace.'
-            });
+            if (this._blurTimeout) clearTimeout(this._blurTimeout);
+
+            // Allow 3.5s grace period for accidental clicks (browser chrome, notifications)
+            this._blurTimeout = setTimeout(() => {
+                if (!this.isActive) return;
+                if (!document.hasFocus() || document.visibilityState === 'hidden') {
+                    this.triggerCriticalViolation({
+                        type: 'window_blur',
+                        title: 'Application Focus Lost',
+                        message: 'You switched windows or navigated away from the proctored exam workspace.'
+                    });
+                }
+            }, 3500);
+
+            this.showWarningToast("Warning: Focus lost. Return to the exam window immediately to avoid exam termination.");
+        };
+        this._focusHandler = () => {
+            if (this._blurTimeout) {
+                clearTimeout(this._blurTimeout);
+                this._blurTimeout = null;
+            }
         };
         window.addEventListener('blur', this._blurHandler);
+        window.addEventListener('focus', this._focusHandler);
 
         // Fullscreen Change (Exiting fullscreen)
         this._fullscreenHandler = () => {
@@ -413,8 +431,13 @@ class QuizProctorEngine {
      * Removes all security listeners cleanly
      */
     disarmAntiCheatListeners() {
+        if (this._blurTimeout) {
+            clearTimeout(this._blurTimeout);
+            this._blurTimeout = null;
+        }
         if (this._visibilityHandler) document.removeEventListener('visibilitychange', this._visibilityHandler);
         if (this._blurHandler) window.removeEventListener('blur', this._blurHandler);
+        if (this._focusHandler) window.removeEventListener('focus', this._focusHandler);
         if (this._fullscreenHandler) document.removeEventListener('fullscreenchange', this._fullscreenHandler);
         if (this._contextMenuHandler) document.removeEventListener('contextmenu', this._contextMenuHandler);
         if (this._copyHandler) {

@@ -1,9 +1,11 @@
+import logging
+from typing import Dict, Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase import Client
 from .database import get_supabase_client
-from typing import Dict, Any
 
+logger = logging.getLogger(__name__)
 security = HTTPBearer()
 
 def get_current_user(
@@ -15,7 +17,6 @@ def get_current_user(
     """
     token = credentials.credentials
     try:
-        # We use get_user(token) which validates the JWT with the Supabase auth server
         user_response = supabase.auth.get_user(token)
         if not user_response or not user_response.user:
             raise HTTPException(
@@ -23,14 +24,13 @@ def get_current_user(
                 detail="Invalid authentication credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        
-        # We can also fetch the user profile from the profiles table here if needed
-        # user_profile = supabase.table("profiles").select("*").eq("id", user_response.user.id).single().execute()
-        
         return user_response.user
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Authentication verification error: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication error: {str(e)}",
+            detail="Invalid or expired authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )

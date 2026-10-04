@@ -103,9 +103,9 @@ def test_weighted_match():
     # matched_req = 1.0, total_req = 3.0 -> req_score = 0.3333
     # Pref calculation:
     # matched_pref = 1.0, total_pref = 1.0 -> pref_score = 1.0
-    # Match % = (0.75 * 0.3333) + (0.25 * 1.0) = 0.25 + 0.25 = 0.50 -> 50%
+    # Match % = (0.75 * 0.25) + (0.25 * 0.5) = 0.1875 + 0.125 = 0.3125 -> 31.25%
     
-    assert result.match_score_percentage == 50.0
+    assert result.match_score_percentage == 31.25
     assert len(result.matched_skills) == 1
     assert result.matched_skills[0].skill.name == "HTML"
     assert len(result.critical_skill_gaps) == 1

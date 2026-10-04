@@ -1,12 +1,15 @@
+import logging
+from typing import List, Any, Dict
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from supabase import Client
-from typing import List, Any, Dict
-from uuid import UUID
+
 from app.core.database import get_supabase_client
 from app.core.security import get_current_user
 from app.models.user import CandidateSkillBase, CandidateSkillDetail, Profile
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.get("/me", response_model=Profile)
@@ -16,9 +19,14 @@ def get_my_profile(
 ):
     try:
         response = supabase.table("profiles").select("*").eq("id", current_user.id).single().execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Profile not found")
         return response.data
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Profile not found: {str(e)}")
+        logger.error(f"Error fetching profile for {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to fetch profile")
 
 class ProfileInit(BaseModel):
     role: str = "seeker"
@@ -36,10 +44,10 @@ def init_my_profile(
             if existing.data:
                 return existing.data
         except Exception:
-            pass # Doesn't exist, proceed to create
+            pass  # Doesn't exist, proceed to create
             
         # Get user metadata (from Google)
-        email = current_user.email
+        email = getattr(current_user, 'email', '')
         full_name = "OAuth User"
         if hasattr(current_user, 'user_metadata') and current_user.user_metadata:
             full_name = current_user.user_metadata.get('full_name', 'OAuth User')
@@ -53,10 +61,14 @@ def init_my_profile(
         
         response = supabase.table("profiles").insert(new_profile).execute()
         if response.data:
+            logger.info(f"Initialized profile for user {current_user.id} with role {profile_data.role}")
             return response.data[0]
-        raise Exception("Failed to insert profile")
+        raise HTTPException(status_code=400, detail="Failed to create profile")
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to init profile: {str(e)}")
+        logger.error(f"Error initializing profile for {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail="Failed to initialize user profile")
 
 @router.get("/me/skills", response_model=List[CandidateSkillDetail])
 def get_my_skills(
@@ -64,7 +76,7 @@ def get_my_skills(
     supabase: Client = Depends(get_supabase_client)
 ):
     try:
-        # Verify user is a seeker (optional but recommended)
+        # Verify user is a seeker
         profile_res = supabase.table("profiles").select("role").eq("id", current_user.id).single().execute()
         if profile_res.data.get("role") != "seeker":
             raise HTTPException(status_code=403, detail="Only seekers have candidate skills")
@@ -90,7 +102,8 @@ def get_my_skills(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Error fetching skills for {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to retrieve skills")
 
 @router.post("/me/skills", status_code=status.HTTP_201_CREATED)
 def add_update_skill(
@@ -99,7 +112,6 @@ def add_update_skill(
     supabase: Client = Depends(get_supabase_client)
 ):
     try:
-        # Upsert the candidate skill
         payload = {
             "candidate_id": current_user.id,
             "skill_id": str(skill_data.skill_id),
@@ -110,12 +122,14 @@ def add_update_skill(
         if skill_data.quiz_score is not None:
             payload["quiz_score"] = skill_data.quiz_score
         
-        # In Supabase, if we have a composite primary key, upsert will update if exists
         response = supabase.table("candidate_skills").upsert(payload).execute()
-        
+        logger.info(f"Upserted skill {skill_data.skill_id} for user {current_user.id}")
         return {"message": "Skill added/updated successfully", "data": response.data}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Error adding/updating skill for {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail="Failed to save skill")
 
 @router.delete("/me/skills/{skill_id}")
 def remove_skill(
@@ -124,15 +138,19 @@ def remove_skill(
     supabase: Client = Depends(get_supabase_client)
 ):
     try:
-        response = supabase.table("candidate_skills")\
+        supabase.table("candidate_skills")\
             .delete()\
             .eq("candidate_id", current_user.id)\
             .eq("skill_id", str(skill_id))\
             .execute()
             
+        logger.info(f"Removed skill {skill_id} for user {current_user.id}")
         return {"message": "Skill removed successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Error removing skill {skill_id} for {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail="Failed to remove skill")
 
 @router.get("/me/applications")
 def get_my_applications(
@@ -146,5 +164,8 @@ def get_my_applications(
             .order("created_at", desc=True)\
             .execute()
         return response.data
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to fetch applications: {str(e)}")
+        logger.error(f"Error fetching applications for {current_user.id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to fetch applications")

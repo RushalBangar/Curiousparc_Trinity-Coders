@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from datetime import datetime
 from uuid import UUID
 
@@ -29,9 +29,7 @@ class Profile(ProfileBase):
     id: UUID
     email: EmailStr
     created_at: datetime
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SkillBase(BaseModel):
     name: str
@@ -39,9 +37,7 @@ class SkillBase(BaseModel):
 
 class Skill(SkillBase):
     id: UUID
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CandidateSkillBase(BaseModel):
     skill_id: UUID
@@ -51,9 +47,7 @@ class CandidateSkillBase(BaseModel):
 
 class CandidateSkill(CandidateSkillBase):
     candidate_id: UUID
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CandidateSkillDetail(CandidateSkillBase):
     skill: Skill

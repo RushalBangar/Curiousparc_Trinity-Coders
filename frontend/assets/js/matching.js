@@ -72,7 +72,7 @@ class MatchingUI {
                     <div class="skill-tags">
                         ${gapAnalysis.matched_skills.map(s => `
                             <span class="badge badge-green" style="padding: 0.4rem 0.85rem; font-size: 0.825rem;">
-                                ✓ ${s.skill.name}
+                                ✓ ${window.escapeHTML(s.skill.name)}
                             </span>
                         `).join('')}
                     </div>
@@ -97,7 +97,7 @@ class MatchingUI {
                         ${gapAnalysis.critical_skill_gaps.map(s => `
                             <div style="display: inline-flex; align-items: stretch; border: 1px solid #fca5a5; border-radius: 9999px; overflow: hidden; background: #fef2f2; margin-right: 0.5rem; margin-bottom: 0.5rem;">
                                 <span style="padding: 0.4rem 0.75rem; font-size: 0.825rem; color: #991b1b; font-weight: 500;">
-                                    ✗ ${s.skill.name}
+                                    ✗ ${window.escapeHTML(s.skill.name)}
                                 </span>
                                 <a href="roadmap.html?skill=${encodeURIComponent(s.skill.name)}" target="_blank" style="padding: 0.4rem 0.75rem; font-size: 0.75rem; background: #fee2e2; color: #b91c1c; font-weight: 600; text-decoration: none; border-left: 1px solid #fca5a5; display: flex; align-items: center; gap: 0.25rem; transition: background 0.2s;" onmouseover="this.style.background='#fca5a5'; this.style.color='#7f1d1d'" onmouseout="this.style.background='#fee2e2'; this.style.color='#b91c1c'">
                                     <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
@@ -129,7 +129,7 @@ class MatchingUI {
                     <div class="skill-tags">
                         ${gapAnalysis.bonus_competencies.map(s => `
                             <span class="badge badge-blue" style="padding: 0.4rem 0.85rem; font-size: 0.825rem;">
-                                ★ ${s.skill.name}
+                                ★ ${window.escapeHTML(s.skill.name)}
                             </span>
                         `).join('')}
                     </div>

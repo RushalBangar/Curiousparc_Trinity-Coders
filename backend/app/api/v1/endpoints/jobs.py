@@ -1,13 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from supabase import Client
+import logging
 from typing import List, Any
 from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException, status
+from supabase import Client
+
 from app.core.database import get_supabase_client
 from app.core.security import get_current_user
 from app.models.job import JobCreate, Job
-from app.models.match import ApplicationCreate, ApplicationUpdate
+from app.models.match import ApplicationUpdate
 from app.services.matcher import calculate_match_and_gap_analysis
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.post("", response_model=Job, status_code=status.HTTP_201_CREATED)
@@ -48,11 +51,13 @@ def create_job(
                 })
             supabase.table("job_skills").insert(skills_payload).execute()
             
+        logger.info(f"Job created successfully: {new_job['id']} by recruiter {current_user.id}")
         return new_job
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Error creating job: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail="Failed to create job posting")
 
 @router.get("/feed")
 def get_job_feed(
@@ -62,12 +67,47 @@ def get_job_feed(
     supabase: Client = Depends(get_supabase_client)
 ):
     try:
-        # Fetch active jobs
-        # Note: Match scores integration will be implemented in the matching engine phase
-        response = supabase.table("jobs").select("*").eq("is_active", True).range(skip, skip + limit - 1).execute()
+        # Safe pagination bounds
+        safe_skip = max(0, skip)
+        safe_limit = max(1, min(limit, 50))
+        
+        response = supabase.table("jobs")\
+            .select("*")\
+            .eq("is_active", True)\
+            .order("created_at", desc=True)\
+            .range(safe_skip, safe_skip + safe_limit - 1)\
+            .execute()
         return response.data
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Error fetching job feed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to retrieve jobs feed")
+
+@router.get("/my-jobs")
+def get_my_jobs(
+    current_user: Any = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase_client)
+):
+    """
+    Dedicated endpoint for recruiters to fetch only their own posted jobs.
+    """
+    try:
+        profile_res = supabase.table("profiles").select("role").eq("id", current_user.id).single().execute()
+        if profile_res.data.get("role") != "recruiter":
+            raise HTTPException(status_code=403, detail="Only recruiters can access their posted jobs")
+
+        response = supabase.table("jobs")\
+            .select("*")\
+            .eq("recruiter_id", current_user.id)\
+            .order("created_at", desc=True)\
+            .execute()
+        return response.data
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching recruiter jobs: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to retrieve recruiter jobs")
 
 @router.get("/{job_id}")
 def get_job_detail(
@@ -79,6 +119,8 @@ def get_job_detail(
         # Fetch job details with skills
         job_res = supabase.table("jobs").select("*, job_skills(skill_id, is_required, weight, skills(name, category))").eq("id", str(job_id)).single().execute()
         job_data = job_res.data
+        if not job_data:
+            raise HTTPException(status_code=404, detail="Job not found")
         
         # Check if current user is a seeker to perform gap analysis
         profile_res = supabase.table("profiles").select("role").eq("id", current_user.id).single().execute()
@@ -96,8 +138,11 @@ def get_job_detail(
             job_data["gap_analysis"] = gap_analysis.model_dump()
             
         return job_data
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Job not found: {str(e)}")
+        logger.error(f"Error fetching job {job_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error fetching job: {str(e)}")
 
 @router.post("/{job_id}/apply")
 def apply_for_job(
@@ -106,6 +151,11 @@ def apply_for_job(
     supabase: Client = Depends(get_supabase_client)
 ):
     try:
+        # Verify user is a seeker
+        profile_res = supabase.table("profiles").select("role").eq("id", current_user.id).single().execute()
+        if profile_res.data.get("role") != "seeker":
+            raise HTTPException(status_code=403, detail="Only seekers can apply for jobs")
+            
         # Fetch job requirements
         job_res = supabase.table("jobs").select("job_skills(skill_id, is_required, weight, skills(name, category))").eq("id", str(job_id)).single().execute()
         job_requirements = job_res.data.get("job_skills", [])
@@ -136,8 +186,12 @@ def apply_for_job(
         }
         
         response = supabase.table("applications").insert(payload).execute()
+        logger.info(f"Candidate {current_user.id} applied to job {job_id} with match score {match_score}%")
         return {"message": "Application submitted successfully", "data": response.data[0]}
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Error applying for job {job_id}: {e}", exc_info=True)
         raise HTTPException(status_code=400, detail=f"Failed to apply: {str(e)}")
 
 @router.get("/{job_id}/candidates")
@@ -149,12 +203,15 @@ def get_job_candidates(
     try:
         # Ensure the current user is the owner (recruiter) of the job
         job_check = supabase.table("jobs").select("recruiter_id").eq("id", str(job_id)).single().execute()
+        if not job_check.data:
+            raise HTTPException(status_code=404, detail="Job not found")
+            
         db_recruiter_id = job_check.data.get("recruiter_id")
         
         if str(db_recruiter_id).lower() != str(current_user.id).lower():
             raise HTTPException(
                 status_code=403, 
-                detail=f"Not authorized. Job owner: {db_recruiter_id}, Current User: {current_user.id}"
+                detail="Not authorized to view candidates for this job"
             )
             
         # Fetch applications for this job, sorted by match score descending
@@ -168,7 +225,8 @@ def get_job_candidates(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Error fetching candidates for job {job_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail="Failed to retrieve candidates")
 
 @router.patch("/{job_id}/applications/{candidate_id}")
 def update_application_status(
@@ -181,6 +239,9 @@ def update_application_status(
     try:
         # Ensure the current user is the owner (recruiter) of the job
         job_check = supabase.table("jobs").select("recruiter_id").eq("id", str(job_id)).single().execute()
+        if not job_check.data:
+            raise HTTPException(status_code=404, detail="Job not found")
+
         db_recruiter_id = job_check.data.get("recruiter_id")
         
         if str(db_recruiter_id).lower() != str(current_user.id).lower():
@@ -198,9 +259,10 @@ def update_application_status(
         if not response.data:
             raise HTTPException(status_code=404, detail="Application not found")
             
+        logger.info(f"Application for candidate {candidate_id} on job {job_id} updated to {new_status}")
         return {"message": "Status updated successfully", "application": response.data[0]}
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
+        logger.error(f"Error updating application status: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail="Failed to update application status")

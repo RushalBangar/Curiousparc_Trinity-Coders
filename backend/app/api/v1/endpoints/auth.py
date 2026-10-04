@@ -1,9 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import logging
+import urllib.parse
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 from supabase import Client
+
+from app.core.config import settings
 from app.core.database import get_supabase_client
+from app.core.limiter import limiter
 from app.models.user import ProfileCreate
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 class UserLogin(BaseModel):
@@ -14,7 +20,8 @@ class UserSignup(ProfileCreate):
     password: str = Field(..., min_length=8)
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
-def signup(user_data: UserSignup, supabase: Client = Depends(get_supabase_client)):
+@limiter.limit("5/minute")
+def signup(request: Request, user_data: UserSignup, supabase: Client = Depends(get_supabase_client)):
     try:
         # 1. Register with Supabase Auth
         auth_response = supabase.auth.sign_up({
@@ -23,7 +30,7 @@ def signup(user_data: UserSignup, supabase: Client = Depends(get_supabase_client
         })
         
         if not auth_response.user:
-            raise HTTPException(status_code=400, detail="User registration failed")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User registration failed")
             
         user_id = auth_response.user.id
         
@@ -40,17 +47,25 @@ def signup(user_data: UserSignup, supabase: Client = Depends(get_supabase_client
         }
         
         profile_response = supabase.table("profiles").insert(profile_data).execute()
+        logger.info(f"User signed up successfully: {user_id} ({user_data.role})")
         
         return {
             "message": "User registered successfully",
             "user_id": user_id,
             "session": auth_response.session
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Signup error for {user_data.email}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Registration failed. Please verify your details or check if the email is already in use."
+        )
 
 @router.post("/login")
-def login(credentials: UserLogin, supabase: Client = Depends(get_supabase_client)):
+@limiter.limit("10/minute")
+def login(request: Request, credentials: UserLogin, supabase: Client = Depends(get_supabase_client)):
     try:
         auth_response = supabase.auth.sign_in_with_password({
             "email": credentials.email,
@@ -58,23 +73,27 @@ def login(credentials: UserLogin, supabase: Client = Depends(get_supabase_client
         })
         
         if not auth_response.session:
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
             
+        logger.info(f"User logged in successfully: {credentials.email}")
         return {
             "message": "Login successful",
             "access_token": auth_response.session.access_token,
             "refresh_token": auth_response.session.refresh_token,
             "user": auth_response.user
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"Login failed: {str(e)}")
+        logger.error(f"Login error for {credentials.email}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
 
 @router.get("/google")
 def login_google(redirect_url: str = None):
     try:
-        import urllib.parse
-        from app.core.database import settings
-        
         # Default to frontend production URL if no redirect_url is provided
         frontend_url = redirect_url or "https://curiousparc-trinity-coders.onrender.com/auth-callback.html"
         
@@ -86,4 +105,8 @@ def login_google(redirect_url: str = None):
         
         return {"url": oauth_url}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Google OAuth failed: {str(e)}")
+        logger.error(f"Google OAuth generation error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to initiate Google authentication"
+        )

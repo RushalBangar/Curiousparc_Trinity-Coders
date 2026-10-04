@@ -44,11 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadRecruiterJobs() {
     const container = document.getElementById('recruiterJobsContainer');
     try {
-        const jobs = await window.ApiClient.get('/jobs/feed');
-        const profile = window.Auth.getProfile();
-        
-        // Filter jobs posted by this recruiter if id matches, otherwise show all active
-        const myJobs = jobs.filter(j => !j.recruiter_id || j.recruiter_id === profile.id);
+        const myJobs = await window.ApiClient.get('/jobs/my-jobs');
         
         document.getElementById('sidebarJobCount').textContent = myJobs.length;
         document.getElementById('statTotalJobs').textContent = myJobs.length;
