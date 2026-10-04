@@ -727,7 +727,7 @@ async function handleResumeUpload(event) {
     formData.append('file', file);
     
     try {
-        const response = await fetch(`${window.ApiClient.baseURL}/resumes/parse`, {
+        const response = await fetch(`${API_BASE_URL}/resumes/parse`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
