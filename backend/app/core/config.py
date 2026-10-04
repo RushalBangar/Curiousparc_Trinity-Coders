@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     supabase_key: str = ""
     supabase_service_role_key: str = ""
     jwt_secret: str = ""
-    cors_origins: str = "http://localhost:5500,http://127.0.0.1:5500,https://curiousparc-trinity-coders.onrender.com"
+    cors_origins: str = "http://localhost:5500,http://127.0.0.1:5500,https://curiousparc-trinity-coders.onrender.com,https://skilll-bridge.vercel.app"
 
     @property
     def cors_origins_list(self) -> List[str]:
